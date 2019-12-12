@@ -24,11 +24,23 @@
 //                           30:3 31:3 32:3 33:3 34:3
 //                           40:3 41:3 42:3 43:3 44:3
 
+constexpr auto FRONT  = 0;
+constexpr auto LEFT   = 3;
+constexpr auto RIGHT  = 4;
+constexpr auto TOP    = 1;
+constexpr auto BOTTOM = 2;
+constexpr auto BACK   = 5;
+
 template<int dim = 5>
 class Cube {
 public:
 	Cube() {
-		std::srand((unsigned)std::time(nullptr));
+		if ((dim & 1) == 0) {
+			std::cerr << "cube dimension must be odd\n";
+			throw std::exception("cube dimension must be odd");
+		}
+
+		//std::srand((unsigned)std::time(nullptr));
 		for (int i = 6; i--;) {
 			Face<dim>* f = new Face<dim>;
 			f->initColor(i+1);
@@ -43,36 +55,57 @@ public:
 	}
 
 	void rotateCubeUp() {
-		Face<dim>* p = face[0];
-		face[0] = face[2];
-		face[2] = face[1];
-		face[1] = p;
+		Face<dim>* front = face[FRONT];
+		face[FRONT] = face[BOTTOM];
+		face[BOTTOM] = face[BACK];
+		face[BACK] = face[TOP];
+		face[TOP] = front;
+		face[LEFT]->rotateCCW();
+		face[RIGHT]->rotateCW();
 	}
 
 	void rotateCubeDown() {
-		Face<dim>* p = face[0];
-		face[0] = face[1];
-		face[1] = face[2];
-		face[2] = p;
+		Face<dim>* front = face[FRONT];
+		face[FRONT] = face[TOP];
+		face[TOP] = face[BACK];
+		face[BACK] = face[BOTTOM];
+		face[BOTTOM] = front;
+		face[LEFT]->rotateCW();
+		face[RIGHT]->rotateCCW();
 	}
 
 	void rotateCubeLeft() {
-		Face<dim>* p = face[0];
-		face[0] = face[4];
-		face[4] = face[5];
-		face[5] = p;
+		Face<dim>* front = face[FRONT];
+		face[FRONT] = face[RIGHT];
+		face[RIGHT] = face[BACK];
+		face[BACK] = face[LEFT];
+		face[LEFT] = front;
+		face[TOP]->rotateCW();
+		face[BOTTOM]->rotateCCW();
 	}
 
 	void rotateCubeRight() {
-		Face<dim>* p = face[0];
-		face[0] = face[5];
-		face[5] = face[4];
-		face[4] = p;
+		Face<dim>* front = face[FRONT];
+		face[FRONT] = face[LEFT];
+		face[LEFT] = face[BACK];
+		face[BACK] = face[RIGHT];
+		face[RIGHT] = front;
+		face[TOP]->rotateCCW();
+		face[BOTTOM]->rotateCW();
 	}
 
-	void rotateCubeTwice() {
-		std::swap(face[0], face[5]);
-		std::swap(face[1], face[2]);
+	void rotateCubeUp2() {
+		//std::swap(face[0], face[5]);
+		//std::swap(face[1], face[2]);
+		rotateCubeUp();
+		rotateCubeUp();
+	}
+
+	void rotateCubeLeft2() {
+		//std::swap(face[0], face[5]);
+		//std::swap(face[1], face[2]);
+		rotateCubeLeft();
+		rotateCubeLeft();
 	}
 
 	// rotate a column up
@@ -176,7 +209,7 @@ public:
 
 	void scramble(int iterations = 200) {
 		for (int x = iterations; x--;) {
-			int r = std::rand() % 11;
+			int r = std::rand() % 6;
 			switch (r) {
 			case 0:
 				rotateCubeUp();
@@ -191,37 +224,124 @@ public:
 				rotateCubeRight();
 				break;
 			case 4:
-				rotateCubeTwice();
+				rotateCubeLeft2();
 				break;
 			case 5:
+				rotateCubeUp2();
+				break;
+			}
+
+			r = std::rand() % 6;
+			switch (r) {
+			case 0:
 				rotateColumnUp(std::rand() % dim);
 				break;
-			case 6:
+			case 1:
 				rotateColumnDown(std::rand() % dim);
 				break;
-			case 7:
+			case 2:
 				rotateColumnTwice(std::rand() % dim);
 				break;
-			case 8:
+			case 3:
 				rotateRowLeft(std::rand() % dim);
 				break;
-			case 9:
+			case 4:
 				rotateRowRight(std::rand() % dim);
 				break;
-			case 10:
+			case 5:
 				rotateRowTwice(std::rand() % dim);
 				break;
 			}
 		}
 	}
 
-	void printRow(std::ostream& s, Face<dim>* face, int row) {
+	bool isSolved() const {
+		for (int f = 6; f--;) {
+			if (!face[f].isSolved()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/// rotates cube to place specified side to the front
+	void rotateToFront(int side) {
+		switch (side) {
+		default:
+		case FRONT:
+			// already in front!
+			break;
+		case LEFT:
+			rotateCubeRight();
+			break;
+		case RIGHT:
+			rotateCubeRight();
+			break;
+		case TOP:
+			rotateCubeDown();
+			break;
+		case BOTTOM:
+			rotateCubeUp();
+			break;
+		case BACK:
+			rotateRowTwice();
+			break;
+		}
+	}
+
+	/// searches for unsolved center and returns side index
+	int findUnsolvedCenter() {
+		for (int f = 6; f--;) {
+			if (!face[f].isSolved()) {
+				return f;
+			}
+		}
+		return -1;
+	}
+
+	// move cubelet(s) to form part 1 of center
+	// this part is always 1 column, but can be many rows (from center to edge, not inclusive)
+	void solveFaceCenter1() {
+		int start = CENTER + 1;
+		int end = dim - 1;
+		int color = face[FRONT].centerColor();
+
+		for (int i = start; i < end; ++i) {
+			// is cubelet the color we want?
+			if (face[FRONT].cface[i][CENTER].color != color) {
+				// find a cubelet the correct color and in the correct position and move it to here
+			}
+		}
+	}
+
+
+	// solve the front face center
+	void solveFaceCenters() {
+		while (true) {
+			// find an unsolved face center
+			int f = findUnsolvedCenter();
+
+			// if there are none, get out
+			if (f == 0) {
+				break;
+			}
+
+			// bring unsolved face to front
+			rotateToFront(f);
+
+			// do steps to solve it.
+			solveFaceCenter1();
+		}
+	}
+
+
+	void printRow(std::ostream& s, Face<dim>* face, int row) const {
 		for (int col = 0; col < dim; ++col) {
 			s << face->cface[row][col].color << ' ';
 		}
 	}
 
-	void print(std::ostream& s) {
+	void print(std::ostream& s) const {
 		for (int row = 0; row < dim; ++row) {
 			for (int col = 0; col < dim; ++col) {
 				s << "    ";
@@ -253,4 +373,5 @@ public:
 	}
 
 	Face<dim>* face[6];
+	const int CENTER = dim / 2;
 };

@@ -4,6 +4,7 @@ class Cubelet {
 public:
 	Cubelet() {
 		color = 0;
+		pos = 0;
 	}
 
 	static void rotate4(Cubelet& s1, Cubelet& s2, Cubelet& s3, Cubelet& s4) {
@@ -13,7 +14,7 @@ public:
 		s3 = s2;
 		s2 = s1temp;
 	}
-
-
+	
 	int color;
+	int pos;
 };

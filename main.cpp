@@ -7,11 +7,14 @@ int main() {
 
 	cube.print(std::cout);
 
-	std::cout << "\n\n";
-	cube.scramble(1000);
+	std::cout << "\n";
+	std::cout << "Starting scramble...";
+	cube.scramble(10);
+	std::cout << " done\n\n";
+
 	cube.print(std::cout);
 
-	//std::cout << "\n\n";
+	std::cout << "\n\n";
 	//cube.rotateRowTwice(0);
 	//cube.print(std::cout);
 

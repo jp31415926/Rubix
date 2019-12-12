@@ -8,30 +8,55 @@ template<int dim = 5>
 class Face {
 
 public:
+	const int CENTER = dim / 2;
 	Cubelet cface[dim][dim];
-	Cubelet& sideColor;
+	int faceColor; // color that this side should be
 
-	Face()
-		:sideColor(cface[(dim - 1) / 2][(dim - 1) / 2])
-	{
+	Face() {
 		initColor(0);
 	};
 
 	void initColor(int color) {
 		for (int row = dim; row--;) {
 			for (int col = dim; col--;) {
-				cface[row][col].color = color * 100 + row * dim + col;
+				cface[row][col].color = color;
+				cface[row][col].pos = row * dim + col;
 			}
 		}
+		faceColor = color;
 	}
 
-	bool isSolved() {
-		int c = cface[0][0].color / 100;
+	int centerColor() const {
+		return faceColor;
+	}
+
+	bool isSolved() const {
 		for (int row = dim; row--;) {
 			for (int col = dim; col--;) {
-				if ((cface[row][col].color / 100) != c) {
+				if ((cface[row][col].color) != faceColor) {
 					return false;
 				}
+			}
+		}
+		return true;
+	}
+
+	bool isCenterSolved() const {
+		for (int row = 1; row < dim - 1; ++row) {
+			for (int col = 1; col < dim - 1; ++col) {
+				if ((cface[row][col].color) != faceColor) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	bool checkRangeColor(int startCol, int startRow, int endCol, int endRow) {
+		for (int r = startRow; r < endRow; ++r) {
+			for (int c = startCol; c < endCol; ++c) {
+				if (cface[r][c].color != faceColor)
+					return false;
 			}
 		}
 		return true;
@@ -42,11 +67,11 @@ public:
 
 		// 00 01 02 03 04 05 06      
 		// 10 11 12 13 14 15 16      
-		// 20 21 22 23 24 25 26  --> 
-		// 30 31 32 33 34 35 36      
+		// 20 21 22 23 24 25 26      
+		// 30 31 32 33 34 35 36  --> 
 		// 40 41 42 43 44 45 46      
-		// 50 51 52 53 54 55 56
-		// 60 61 62 63 64 65 66
+		// 50 51 52 53 54 55 56      
+		// 60 61 62 63 64 65 66      
 
 		// 00 01 02 03 04      40 30 20 10 00
 		// 10 11 12 13 14      41 31 21 11 01
@@ -77,19 +102,11 @@ public:
 		//   32 -> 21
 		//   21 -> 12
 
-		//print(std::cout);
-		//std::cout << '\n';
-
 		for (int start = 0, end = dim - 1; start != end; ++start, --end) {
 			Cubelet::rotate4(cface[start][start], cface[start][end], cface[end][end], cface[end][start]);
 			for (int x = start + 1; x <= end - 1; ++x) {
-				//std::cout << "x=" << x <<", start=" << start << ", end=" << end << '\n';
-				//std::cout << "[" << start << "][" << x << "] [" << x << "][" << end << "] [" 
-				//	<< end << "][" << end + start - x << "] [" << end + start -x << "][" << start << "]\n";
 				Cubelet::rotate4(cface[start][x], cface[x][end], cface[end][end + start - x], cface[end + start - x][start]);
 			}
-			//print(std::cout);
-			//std::cout << '\n';
 		}
 	}
 
@@ -129,12 +146,14 @@ public:
 		}
 	}
 
-	void print(std::ostream& s) {
-		for (int x = 0; x < dim; ++x) {
-			for (int y = 0; y < dim; ++y) {
-				s << x << y << ':' << cface[x][y].color << ' ';
+	void print(std::ostream& s) const {
+		for (int row = 0; row < dim; ++row) {
+			for (int col = 0; col < dim; ++col) {
+				//s << x << y << ':' << cface[x][y].color << ' ';
+				s << cface[row][col].color * 100 + cface[row][col].pos << ' ';
 			}
 			s << '\n';
 		}
 	}
+
 };
