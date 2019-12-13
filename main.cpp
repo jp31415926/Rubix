@@ -9,7 +9,7 @@ int main() {
 
 	std::cout << "\n";
 	std::cout << "Starting scramble...";
-	cube.scramble(10);
+	cube.scramble();
 	std::cout << " done\n\n";
 
 	cube.print(std::cout);

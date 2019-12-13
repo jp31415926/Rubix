@@ -13,10 +13,10 @@
 //                           40:2 41:2 42:2 43:2 44:2
 // 3                         0                         4                         5
 // 00:4 01:4 02:4 03:4 04:4  00:1 01:1 02:1 03:1 04:1  00:5 01:5 02:5 03:5 04:5  00:6 01:6 02:6 03:6 04:6
-// 10:4 11:4 12:4 13:4 14:4  10:1 11:1 12:1 13:1 14:1	 10:5 11:5 12:5 13:5 14:5	 10:6 11:6 12:6 13:6 14:6
-// 20:4 21:4 22:4 23:4 24:4  20:1 21:1 22:1 23:1 24:1	 20:5 21:5 22:5 23:5 24:5	 20:6 21:6 22:6 23:6 24:6
-// 30:4 31:4 32:4 33:4 34:4  30:1 31:1 32:1 33:1 34:1	 30:5 31:5 32:5 33:5 34:5	 30:6 31:6 32:6 33:6 34:6
-// 40:4 41:4 42:4 43:4 44:4  40:1 41:1 42:1 43:1 44:1	 40:5 41:5 42:5 43:5 44:5	 40:6 41:6 42:6 43:6 44:6
+// 10:4 11:4 12:4 13:4 14:4  10:1 11:1 12:1 13:1 14:1  10:5 11:5 12:5 13:5 14:5	 10:6 11:6 12:6 13:6 14:6
+// 20:4 21:4 22:4 23:4 24:4  20:1 21:1 22:1 23:1 24:1  20:5 21:5 22:5 23:5 24:5	 20:6 21:6 22:6 23:6 24:6
+// 30:4 31:4 32:4 33:4 34:4  30:1 31:1 32:1 33:1 34:1  30:5 31:5 32:5 33:5 34:5	 30:6 31:6 32:6 33:6 34:6
+// 40:4 41:4 42:4 43:4 44:4  40:1 41:1 42:1 43:1 44:1  40:5 41:5 42:5 43:5 44:5	 40:6 41:6 42:6 43:6 44:6
 //                           2
 //                           00:3 01:3 02:3 03:3 04:3
 //                           10:3 11:3 12:3 13:3 14:3
@@ -94,18 +94,39 @@ public:
 		face[BOTTOM]->rotateCW();
 	}
 
+	void rotateCubeSpinCW() {
+		Face<dim>* top = face[TOP];
+		face[TOP] = face[LEFT];
+		face[LEFT] = face[BOTTOM];
+		face[BOTTOM] = face[RIGHT];
+		face[RIGHT] = top;
+		face[FRONT]->rotateCW();
+		face[BACK]->rotateCCW();
+	}
+
+	void rotateCubeSpinCCW() {
+		Face<dim>* top = face[TOP];
+		face[TOP] = face[RIGHT];
+		face[RIGHT] = face[BOTTOM];
+		face[BOTTOM] = face[LEFT];
+		face[LEFT] = top;
+		face[FRONT]->rotateCCW();
+		face[BACK]->rotateCW();
+	}
+
 	void rotateCubeUp2() {
-		//std::swap(face[0], face[5]);
-		//std::swap(face[1], face[2]);
 		rotateCubeUp();
 		rotateCubeUp();
 	}
 
 	void rotateCubeLeft2() {
-		//std::swap(face[0], face[5]);
-		//std::swap(face[1], face[2]);
 		rotateCubeLeft();
 		rotateCubeLeft();
+	}
+
+	void rotateCubeSpin2() {
+		rotateCubeSpinCW();
+		rotateCubeSpinCW();
 	}
 
 	// rotate a column up
@@ -209,7 +230,7 @@ public:
 
 	void scramble(int iterations = 200) {
 		for (int x = iterations; x--;) {
-			int r = std::rand() % 6;
+			int r = std::rand() % 20;
 			switch (r) {
 			case 0:
 				rotateCubeUp();
@@ -229,8 +250,17 @@ public:
 			case 5:
 				rotateCubeUp2();
 				break;
+			case 6:
+				rotateCubeSpinCW();
+				break;
+			case 7:
+				rotateCubeSpinCCW();
+				break;
+			case 8:
+				rotateCubeSpin2();
+				break;
 			}
-
+			
 			r = std::rand() % 6;
 			switch (r) {
 			case 0:
@@ -275,7 +305,7 @@ public:
 			rotateCubeRight();
 			break;
 		case RIGHT:
-			rotateCubeRight();
+			rotateCubeLeft();
 			break;
 		case TOP:
 			rotateCubeDown();
@@ -284,7 +314,7 @@ public:
 			rotateCubeUp();
 			break;
 		case BACK:
-			rotateRowTwice();
+			rotateCubeLeft2();
 			break;
 		}
 	}
@@ -310,6 +340,13 @@ public:
 			// is cubelet the color we want?
 			if (face[FRONT].cface[i][CENTER].color != color) {
 				// find a cubelet the correct color and in the correct position and move it to here
+				for (int f = 6; f--;) {
+					Face<dim> faceCopy(*(face[f]));
+					int rot = faceCopy.findCubeletWithRotate(i, CENTER, color);
+					if (rot > 0) {
+
+					}
+				}
 			}
 		}
 	}
@@ -322,7 +359,7 @@ public:
 			int f = findUnsolvedCenter();
 
 			// if there are none, get out
-			if (f == 0) {
+			if (f == -1) {
 				break;
 			}
 

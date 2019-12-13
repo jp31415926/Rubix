@@ -62,6 +62,19 @@ public:
 		return true;
 	}
 
+	// searches for cubelet with given color at the location given, and the other
+	// 3 locations that can be rotated there
+	// returns 0 if not found, or 1-4 to indicate rotation required
+	// rotate clockwise n-1 times
+	int findCubeletWithRotate(int row, int col, int color) {
+		for (int r = 1; r < 4; ++r) {
+			if (cface[row][col].color == color) {
+				return r;
+			}
+			rotateCW();
+		}
+	}
+
 	/// Rotate front face clockwise
 	void rotateCW() {
 
