@@ -129,102 +129,191 @@ public:
 		rotateCubeSpinCW();
 	}
 
-	// rotate a column up
+	/// rotates cube to place specified face to the front
+	void rotateCubeToFront(int side) {
+		switch (side) {
+		default:
+		case FRONT:
+			// no rotation needed
+			break;
+		case LEFT:
+			rotateCubeRight();
+			break;
+		case RIGHT:
+			rotateCubeLeft();
+			break;
+		case TOP:
+			rotateCubeDown();
+			break;
+		case BOTTOM:
+			rotateCubeUp();
+			break;
+		case BACK:
+			rotateCubeLeft2();
+			break;
+		}
+	}
+
+	/// rotates cube to place specified face to the front based on face color
+	void rotateCubeToFrontByColor(int color) {
+		for (int f = 0; f < 6; ++f) {
+			if (face[f]->faceColor() == color) {
+				rotateCubeToFront(f);
+				break;
+			}
+		}
+	}
+
 	void rotateColumnUp(int col) {
 		for (int i = dim; i--;) {
 			Cubelet::rotate4(
-				face[0]->cface[i][col],
-				face[1]->cface[i][col],
-				face[5]->cface[i][col],
-				face[2]->cface[i][col]);
+				face[FRONT]->cface[i][col],
+				face[TOP]->cface[i][col],
+				face[BACK]->cface[i][col],
+				face[BOTTOM]->cface[i][col]);
 		}
 		if (col == 0) {
-			face[3]->rotateCCW();
+			face[LEFT]->rotateCCW();
 		}
 		else if (col == dim - 1) {
-			face[4]->rotateCW();
+			face[RIGHT]->rotateCW();
 		}
 	}
 
 	void rotateColumnDown(int col) {
 		for (int i = dim; i--;) {
 			Cubelet::rotate4(
-				face[0]->cface[i][col],
-				face[2]->cface[i][col],
-				face[5]->cface[i][col],
-				face[1]->cface[i][col]);
+				face[FRONT]->cface[i][col],
+				face[BOTTOM]->cface[i][col],
+				face[BACK]->cface[i][col],
+				face[TOP]->cface[i][col]);
 		}
 		if (col == 0) {
-			face[3]->rotateCW();
+			face[LEFT]->rotateCW();
 		}
 		else if (col == dim - 1) {
-			face[4]->rotateCCW();
+			face[RIGHT]->rotateCCW();
 		}
 	}
 
 	void rotateColumnTwice(int col) {
 		for (int i = dim; i--;) {
 			std::swap(
-				face[0]->cface[i][col],
-				face[5]->cface[i][col]);
+				face[FRONT]->cface[i][col],
+				face[BACK]->cface[i][col]);
 			std::swap(
-				face[1]->cface[i][col],
-				face[2]->cface[i][col]);
+				face[TOP]->cface[i][col],
+				face[BOTTOM]->cface[i][col]);
 		}
 		if (col == 0) {
-			face[3]->rotateTwice();
+			face[LEFT]->rotateTwice();
 		}
 		else if (col == dim - 1) {
-			face[4]->rotateTwice();
+			face[RIGHT]->rotateTwice();
 		}
 	}
 
 	void rotateRowLeft(int row) {
 		for (int i = dim; i--;) {
 			Cubelet::rotate4(
-				face[0]->cface[row][i],
-				face[3]->cface[row][i],
-				face[5]->cface[row][i],
-				face[4]->cface[row][i]);
+				face[FRONT]->cface[row][i],
+				face[LEFT]->cface[row][i],
+				face[BACK]->cface[row][i],
+				face[RIGHT]->cface[row][i]);
 		}
 		if (row == 0) {
-			face[1]->rotateCW();
+			face[TOP]->rotateCW();
 		}
 		else if (row == dim - 1) {
-			face[2]->rotateCCW();
+			face[BOTTOM]->rotateCCW();
 		}
 	}
 
 	void rotateRowRight(int row) {
 		for (int i = dim; i--;) {
 			Cubelet::rotate4(
-				face[0]->cface[row][i],
-				face[4]->cface[row][i],
-				face[5]->cface[row][i],
-				face[3]->cface[row][i]);
+				face[FRONT]->cface[row][i],
+				face[RIGHT]->cface[row][i],
+				face[BACK]->cface[row][i],
+				face[LEFT]->cface[row][i]);
 		}
 		if (row == 0) {
-			face[1]->rotateCCW();
+			face[TOP]->rotateCCW();
 		}
 		else if (row == dim - 1) {
-			face[2]->rotateCW();
+			face[BOTTOM]->rotateCW();
 		}
 	}
 
 	void rotateRowTwice(int row) {
 		for (int i = dim; i--;) {
 			std::swap(
-				face[0]->cface[row][i],
-				face[5]->cface[row][i]);
+				face[FRONT]->cface[row][i],
+				face[BACK]->cface[row][i]);
 			std::swap(
-				face[4]->cface[row][i],
-				face[3]->cface[row][i]);
+				face[RIGHT]->cface[row][i],
+				face[LEFT]->cface[row][i]);
 		}
 		if (row == 0) {
-			face[1]->rotateTwice();
+			face[TOP]->rotateTwice();
 		}
 		else if (row == dim - 1) {
-			face[2]->rotateTwice();
+			face[BOTTOM]->rotateTwice();
+		}
+	}
+
+	// rotate a slice or layer clockwise (slice=0 is top layer)
+	// (equvilant to rotateCubeLeft, rotateColumnDown(slice), rotateCubeRight)
+	void rotateSliceCW(int slice) {
+		for (int i = dim; i--;) {
+			Cubelet::rotate4(
+				face[LEFT]->cface[i][slice],
+				face[BOTTOM]->cface[i][slice],
+				face[RIGHT]->cface[i][slice],
+				face[TOP]->cface[i][slice]);
+		}
+		if (slice == 0) {
+			face[FRONT]->rotateCW();
+		}
+		else if (slice == dim - 1) {
+			face[BACK]->rotateCCW();
+		}
+	}
+
+	// rotate a slice or layer counter-clockwise (slice=0 is top layer)
+	// (equvilant to rotateCubeLeft, rotateColumnUp(slice), rotateCubeRight)
+	void rotateSliceCCW(int slice) {
+		for (int i = dim; i--;) {
+			Cubelet::rotate4(
+				face[LEFT]->cface[i][slice],
+				face[TOP]->cface[i][slice],
+				face[RIGHT]->cface[i][slice],
+				face[BOTTOM]->cface[i][slice]);
+		}
+		if (slice == 0) {
+			face[FRONT]->rotateCCW();
+		}
+		else if (slice == dim - 1) {
+			face[BACK]->rotateCW();
+		}
+	}
+
+	// rotate a slice or layer twice (slice=0 is top layer)
+	// (equvilant to rotateCubeLeft, rotateColumnTwice(slice), rotateCubeRight)
+	void rotateSliceTwice(int slice) {
+		for (int i = dim; i--;) {
+			std::swap(
+				face[LEFT]->cface[i][slice],
+				face[RIGHT]->cface[i][slice]);
+			std::swap(
+				face[TOP]->cface[i][slice],
+				face[BOTTOM]->cface[i][slice]);
+		}
+		if (slice == 0) {
+			face[LEFT]->rotateTwice();
+		}
+		else if (slice == dim - 1) {
+			face[RIGHT]->rotateTwice();
 		}
 	}
 
@@ -294,63 +383,111 @@ public:
 		return true;
 	}
 
-	/// rotates cube to place specified side to the front
-	void rotateToFront(int side) {
-		switch (side) {
-		default:
-		case FRONT:
-			// already in front!
-			break;
-		case LEFT:
-			rotateCubeRight();
-			break;
-		case RIGHT:
-			rotateCubeLeft();
-			break;
-		case TOP:
-			rotateCubeDown();
-			break;
-		case BOTTOM:
-			rotateCubeUp();
-			break;
-		case BACK:
-			rotateCubeLeft2();
-			break;
-		}
-	}
-
 	/// searches for unsolved center and returns side index
 	int findUnsolvedCenter() {
 		for (int f = 6; f--;) {
-			if (!face[f].isSolved()) {
+			if (!face[f]->isSolved()) {
 				return f;
 			}
 		}
 		return -1;
 	}
 
+	// Assumptions: front face as already been searched for a matching part 1
 	// move cubelet(s) to form part 1 of center
-	// this part is always 1 column, but can be many rows (from center to edge, not inclusive)
-	void solveFaceCenter1() {
+	// this part is always center column, but can be many rows (from center to bottom edge, not inclusive)
+	// 43-53 cubelets on a 7x7
+	void solveFaceCenterPart1() {
 		int start = CENTER + 1;
 		int end = dim - 1;
-		int color = face[FRONT].centerColor();
+		int color = face[FRONT]->faceColor();
 
 		for (int i = start; i < end; ++i) {
 			// is cubelet the color we want?
-			if (face[FRONT].cface[i][CENTER].color != color) {
+			if (face[FRONT]->cface[i][CENTER].color != color) {
 				// find a cubelet the correct color and in the correct position and move it to here
+				// search all the faces
 				for (int f = 6; f--;) {
-					Face<dim> faceCopy(*(face[f]));
-					int rot = faceCopy.findCubeletWithRotate(i, CENTER, color);
-					if (rot > 0) {
-
+					// rotate each face up to 4 times
+					for (int i = 4; i--;) {
+						if (face[f]->cface[i][CENTER].color != color) {
+							// turn to that face, rotate the face, then move back.
+							rotateCubeToFront(f);
+							rotateSliceCW(0);
+							rotateCubeToFrontByColor(color);
+						}
+						else {
+							// found a match! Now move it to the front
+							switch (f) {
+							case FRONT:
+								break;
+							case TOP:
+								rotateSliceCCW(0);
+								rotateRowRight(0);
+								rotateColumnDown(i);
+								rotateSliceCW(0);
+								rotateColumnUp(i);
+								break;
+							case BOTTOM:
+								rotateSliceCCW(0);
+								rotateRowLeft(0);
+								rotateColumnUp(i);
+								rotateSliceCW(0);
+								rotateColumnDown(i);
+								break;
+							case LEFT:
+								break;
+							
+							}
+						}
 					}
 				}
 			}
 		}
 	}
 
+	// 00 01 02 03 04 05 06
+	// 10 11 12 13 14 15 16
+	// 20 21 22 23 24 25 26
+	// 30 31 32 33 34 35 36
+	// 40 41 42 43 44 45 46
+	// 50 51 52 53 54 55 56
+	// 60 61 62 63 64 65 66
+
+	// center parts for 7x7 example:
+	// part 1: 43-53
+	// part 2: 44-55
+	// part 3: 41-52
+	// part 4: 11-25
+
+	// move cubelet(s) to form part 1 of center
+	// this part is always 1 column, but can be many rows (from center to edge, not inclusive)
+	void solveCurrentFaceCenter() {
+		int color = face[FRONT]->faceColor();
+
+		// See if part 1 is present (43-53), rotating if needed
+		{
+			bool found = false;
+			for (int i = 3; i--;) {
+				if (face[FRONT]->checkRangeColor(CENTER + 1, CENTER, dim - 2, CENTER)) {
+					found = true;
+					break;
+				}
+				rotateSliceCW(0); // rotate top face
+			}
+			if (!found) {
+				solveFaceCenterPart1();
+			}
+		}
+		// save this rotation so we can get back to it.
+		int rotation = face[FRONT]->faceRotation();
+
+		while (true) {
+			// make sure the face we are working on is at the front
+			rotateCubeToFrontByColor(color);
+
+		}
+	}
 
 	// solve the front face center
 	void solveFaceCenters() {
@@ -364,10 +501,10 @@ public:
 			}
 
 			// bring unsolved face to front
-			rotateToFront(f);
+			rotateCubeToFront(f);
 
 			// do steps to solve it.
-			solveFaceCenter1();
+			solveCurrentFaceCenter();
 		}
 	}
 

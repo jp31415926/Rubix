@@ -13,10 +13,9 @@ int main() {
 	std::cout << " done\n\n";
 
 	cube.print(std::cout);
-
 	std::cout << "\n\n";
-	//cube.rotateRowTwice(0);
-	//cube.print(std::cout);
+	cube.solveFaceCenters();
+	cube.print(std::cout);
 
 	return 0;
 }

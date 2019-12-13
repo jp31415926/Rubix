@@ -10,10 +10,12 @@ class Face {
 public:
 	const int CENTER = dim / 2;
 	Cubelet cface[dim][dim];
-	int faceColor; // color that this side should be
+	int m_faceColor; // color that this side should be
+	unsigned m_rotation;
 
 	Face() {
 		initColor(0);
+		m_rotation = 0;
 	};
 
 	void initColor(int color) {
@@ -23,17 +25,21 @@ public:
 				cface[row][col].pos = row * dim + col;
 			}
 		}
-		faceColor = color;
+		m_faceColor = color;
 	}
 
-	int centerColor() const {
-		return faceColor;
+	int faceColor() const {
+		return m_faceColor;
+	}
+
+	int faceRotation() const {
+		return m_rotation;
 	}
 
 	bool isSolved() const {
 		for (int row = dim; row--;) {
 			for (int col = dim; col--;) {
-				if ((cface[row][col].color) != faceColor) {
+				if ((cface[row][col].color) != m_faceColor) {
 					return false;
 				}
 			}
@@ -44,7 +50,7 @@ public:
 	bool isCenterSolved() const {
 		for (int row = 1; row < dim - 1; ++row) {
 			for (int col = 1; col < dim - 1; ++col) {
-				if ((cface[row][col].color) != faceColor) {
+				if ((cface[row][col].color) != m_faceColor) {
 					return false;
 				}
 			}
@@ -52,27 +58,14 @@ public:
 		return true;
 	}
 
-	bool checkRangeColor(int startCol, int startRow, int endCol, int endRow) {
+	bool checkRangeColor(int startRow, int startCol, int endRow, int endCol) {
 		for (int r = startRow; r < endRow; ++r) {
 			for (int c = startCol; c < endCol; ++c) {
-				if (cface[r][c].color != faceColor)
+				if (cface[r][c].color != m_faceColor)
 					return false;
 			}
 		}
 		return true;
-	}
-
-	// searches for cubelet with given color at the location given, and the other
-	// 3 locations that can be rotated there
-	// returns 0 if not found, or 1-4 to indicate rotation required
-	// rotate clockwise n-1 times
-	int findCubeletWithRotate(int row, int col, int color) {
-		for (int r = 1; r < 4; ++r) {
-			if (cface[row][col].color == color) {
-				return r;
-			}
-			rotateCW();
-		}
 	}
 
 	/// Rotate front face clockwise
@@ -116,11 +109,15 @@ public:
 		//   21 -> 12
 
 		for (int start = 0, end = dim - 1; start != end; ++start, --end) {
-			Cubelet::rotate4(cface[start][start], cface[start][end], cface[end][end], cface[end][start]);
+			// rotate corners
+			Cubelet::rotate4(cface[start][start], cface[start][end], cface[end][end], cface[end][start], 1);
 			for (int x = start + 1; x <= end - 1; ++x) {
-				Cubelet::rotate4(cface[start][x], cface[x][end], cface[end][end + start - x], cface[end + start - x][start]);
+				// rotate internal cubelets
+				Cubelet::rotate4(cface[start][x], cface[x][end], cface[end][end + start - x], cface[end + start - x][start], 1);
 			}
+			cface[CENTER][CENTER].rot = (cface[CENTER][CENTER].rot + 1) & 3;
 		}
+		m_rotation = (m_rotation + 1) & 3;
 	}
 
 	/// Rotate front face counter-clockwise
@@ -137,7 +134,9 @@ public:
 			for (int x = start + 1; x <= end - 1; ++x) {
 				Cubelet::rotate4(cface[start][x], cface[end + start - x][start], cface[end][x], cface[end + start - x][end]);
 			}
+			cface[CENTER][CENTER].rot = (cface[CENTER][CENTER].rot - 1) & 3;
 		}
+		m_rotation = (m_rotation - 1) & 3;
 	}
 
 	/// Rotate front face twice (direction doesn't matter)
@@ -157,6 +156,7 @@ public:
 				std::swap(cface[end + start - x][start], cface[x][end]);
 			}
 		}
+		m_rotation = (m_rotation + 2) & 3;
 	}
 
 	void print(std::ostream& s) const {
