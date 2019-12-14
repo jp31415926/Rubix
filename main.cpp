@@ -3,19 +3,15 @@
 #include "Cube.h"
 
 int main() {
-	Cube<5> cube;
+	Cube cube;
 
 	cube.print(std::cout);
 
 	std::cout << "\n";
-	std::cout << "Starting scramble...";
-	cube.scramble();
-	std::cout << " done\n\n";
+	std::cout << "Scramble...\n";
+	cube.scramble(20);
 
-	cube.print(std::cout);
-	std::cout << "\n\n";
 	cube.solveFaceCenters();
-	cube.print(std::cout);
 
 	return 0;
 }

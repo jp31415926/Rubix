@@ -4,12 +4,11 @@
 #include <algorithm> // std::swap
 #include "Cubelet.h"
 
-template<int dim = 5>
 class Face {
 
 public:
-	const int CENTER = dim / 2;
-	Cubelet cface[dim][dim];
+	const int CENTER = CUBE_SIZE / 2;
+	Cubelet cface[CUBE_SIZE][CUBE_SIZE];
 	int m_faceColor; // color that this side should be
 	unsigned m_rotation;
 
@@ -19,16 +18,19 @@ public:
 	};
 
 	void initColor(int color) {
-		for (int row = dim; row--;) {
-			for (int col = dim; col--;) {
+		for (int row = CUBE_SIZE; row--;) {
+			for (int col = CUBE_SIZE; col--;) {
 				cface[row][col].color = color;
-				cface[row][col].pos = row * dim + col;
+				cface[row][col].pos = row * CUBE_SIZE + col;
 			}
 		}
 		m_faceColor = color;
 	}
 
 	int faceColor() const {
+		if (CUBE_SIZE % 2 == 1) {
+			return cface[CENTER][CENTER].color;
+		}
 		return m_faceColor;
 	}
 
@@ -37,9 +39,9 @@ public:
 	}
 
 	bool isSolved() const {
-		for (int row = dim; row--;) {
-			for (int col = dim; col--;) {
-				if ((cface[row][col].color) != m_faceColor) {
+		for (int row = CUBE_SIZE; row--;) {
+			for (int col = CUBE_SIZE; col--;) {
+				if ((cface[row][col].color) != faceColor()) {
 					return false;
 				}
 			}
@@ -48,9 +50,9 @@ public:
 	}
 
 	bool isCenterSolved() const {
-		for (int row = 1; row < dim - 1; ++row) {
-			for (int col = 1; col < dim - 1; ++col) {
-				if ((cface[row][col].color) != m_faceColor) {
+		for (int row = 1; row < CUBE_SIZE - 1; ++row) {
+			for (int col = 1; col < CUBE_SIZE - 1; ++col) {
+				if ((cface[row][col].color) != faceColor()) {
 					return false;
 				}
 			}
@@ -58,10 +60,11 @@ public:
 		return true;
 	}
 
-	bool checkRangeColor(int startRow, int startCol, int endRow, int endCol) {
-		for (int r = startRow; r < endRow; ++r) {
-			for (int c = startCol; c < endCol; ++c) {
-				if (cface[r][c].color != m_faceColor)
+	bool isRangeSolved(int startRow, int startCol, int endRow, int endCol) {
+		int color = faceColor();
+		for (int r = startRow; r <= endRow; ++r) {
+			for (int c = startCol; c <= endCol; ++c) {
+				if (cface[r][c].color != color)
 					return false;
 			}
 		}
@@ -91,7 +94,7 @@ public:
 		//   04 -> 44
 		//   44 -> 40
 		//   40 -> 00
-		// 2. rotate edges (dim-2 * 2)
+		// 2. rotate edges (CUBE_SIZE-2 * 2)
 		//   01 02 03 -> 14 24 34
 		//   14 24 34 -> 43 42 41
 		//   43 42 41 -> 30 20 10
@@ -108,7 +111,7 @@ public:
 		//   32 -> 21
 		//   21 -> 12
 
-		for (int start = 0, end = dim - 1; start != end; ++start, --end) {
+		for (int start = 0, end = CUBE_SIZE - 1; start != end; ++start, --end) {
 			// rotate corners
 			Cubelet::rotate4(cface[start][start], cface[start][end], cface[end][end], cface[end][start], 1);
 			for (int x = start + 1; x <= end - 1; ++x) {
@@ -129,10 +132,11 @@ public:
 		// 30 31 32 33 34      01 11 21 31 41
 		// 40 41 42 43 44      00 10 20 30 40
 
-		for (int start = 0, end = dim - 1; start != end; ++start, --end) {
-			Cubelet::rotate4(cface[start][start], cface[end][start], cface[end][end], cface[start][end]);
+		for (int start = 0, end = CUBE_SIZE - 1; start != end; ++start, --end) {
+			Cubelet::rotate4(cface[start][start], cface[end][start], cface[end][end], cface[start][end], -1);
 			for (int x = start + 1; x <= end - 1; ++x) {
-				Cubelet::rotate4(cface[start][x], cface[end + start - x][start], cface[end][x], cface[end + start - x][end]);
+				// Cubelet::rotate4(cface[start][x], cface[end + start - x][start], cface[end][x], cface[end + start - x][end], -1);
+				Cubelet::rotate4(cface[start][x], cface[end + start - x][start], cface[end][end + start - x], cface[x][end], -1);
 			}
 			cface[CENTER][CENTER].rot = (cface[CENTER][CENTER].rot - 1) & 3;
 		}
@@ -148,7 +152,7 @@ public:
 		// 30 31 32 33 34      14 13 12 11 10
 		// 40 41 42 43 44      04 03 02 01 00
 
-		for (int start = 0, end = dim - 1; start != end; ++start, --end) {
+		for (int start = 0, end = CUBE_SIZE - 1; start != end; ++start, --end) {
 			std::swap(cface[start][start], cface[end][end]);
 			std::swap(cface[end][start], cface[start][end]);
 			for (int x = start + 1; x <= end - 1; ++x) {
@@ -160,8 +164,8 @@ public:
 	}
 
 	void print(std::ostream& s) const {
-		for (int row = 0; row < dim; ++row) {
-			for (int col = 0; col < dim; ++col) {
+		for (int row = 0; row < CUBE_SIZE; ++row) {
+			for (int col = 0; col < CUBE_SIZE; ++col) {
 				//s << x << y << ':' << cface[x][y].color << ' ';
 				s << cface[row][col].color * 100 + cface[row][col].pos << ' ';
 			}

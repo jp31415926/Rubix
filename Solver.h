@@ -1,7 +1,7 @@
 #pragma once
 #include "Cube.h"
 
-template<int dim>
+template<int CUBE_SIZE>
 class Solver {
 public:
 	Solver(Cube& cube) 
