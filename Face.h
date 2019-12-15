@@ -1,7 +1,6 @@
 #pragma once
 #include <iostream>
 #include <ostream>
-#include <algorithm> // std::swap
 #include "Cubelet.h"
 
 class Face {
@@ -9,7 +8,7 @@ class Face {
 public:
 	const int CENTER = CUBE_SIZE / 2;
 	Cubelet cface[CUBE_SIZE][CUBE_SIZE];
-	int m_faceColor; // color that this side should be
+	//Cubelet::color_t m_faceColor; // color that this side should be
 	unsigned m_rotation;
 
 	Face() {
@@ -17,21 +16,21 @@ public:
 		m_rotation = 0;
 	};
 
-	void initColor(int color) {
+	void initColor(Cubelet::color_t color) {
 		for (int row = CUBE_SIZE; row--;) {
 			for (int col = CUBE_SIZE; col--;) {
 				cface[row][col].color = color;
 				cface[row][col].pos = row * CUBE_SIZE + col;
 			}
 		}
-		m_faceColor = color;
+		//m_faceColor = color;
 	}
 
-	int faceColor() const {
+	Cubelet::color_t faceColor() const {
 		if (CUBE_SIZE % 2 == 1) {
 			return cface[CENTER][CENTER].color;
 		}
-		return m_faceColor;
+		//return m_faceColor;
 	}
 
 	int faceRotation() const {
@@ -153,11 +152,11 @@ public:
 		// 40 41 42 43 44      04 03 02 01 00
 
 		for (int start = 0, end = CUBE_SIZE - 1; start != end; ++start, --end) {
-			std::swap(cface[start][start], cface[end][end]);
-			std::swap(cface[end][start], cface[start][end]);
+			Cubelet::swap(cface[start][start], cface[end][end], 2);
+			Cubelet::swap(cface[end][start], cface[start][end], 2);
 			for (int x = start + 1; x <= end - 1; ++x) {
-				std::swap(cface[start][x], cface[end][end + start - x]);
-				std::swap(cface[end + start - x][start], cface[x][end]);
+				Cubelet::swap(cface[start][x], cface[end][end + start - x], 2);
+				Cubelet::swap(cface[end + start - x][start], cface[x][end], 2);
 			}
 		}
 		m_rotation = (m_rotation + 2) & 3;

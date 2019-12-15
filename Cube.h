@@ -5,30 +5,63 @@
 #include <ctime>
 #include "Face.h"
 
-//                           1
-//                           00:2 01:2 02:2 03:2 04:2
-//                           10:2 11:2 12:2 13:2 14:2
-//                           20:2 21:2 22:2 23:2 24:2
-//                           30:2 31:2 32:2 33:2 34:2
-//                           40:2 41:2 42:2 43:2 44:2
-// 3                         0                         4                         5
-// 00:4 01:4 02:4 03:4 04:4  00:1 01:1 02:1 03:1 04:1  00:5 01:5 02:5 03:5 04:5  00:6 01:6 02:6 03:6 04:6
-// 10:4 11:4 12:4 13:4 14:4  10:1 11:1 12:1 13:1 14:1  10:5 11:5 12:5 13:5 14:5	 10:6 11:6 12:6 13:6 14:6
-// 20:4 21:4 22:4 23:4 24:4  20:1 21:1 22:1 23:1 24:1  20:5 21:5 22:5 23:5 24:5	 20:6 21:6 22:6 23:6 24:6
-// 30:4 31:4 32:4 33:4 34:4  30:1 31:1 32:1 33:1 34:1  30:5 31:5 32:5 33:5 34:5	 30:6 31:6 32:6 33:6 34:6
-// 40:4 41:4 42:4 43:4 44:4  40:1 41:1 42:1 43:1 44:1  40:5 41:5 42:5 43:5 44:5	 40:6 41:6 42:6 43:6 44:6
-//                           2
-//                           00:3 01:3 02:3 03:3 04:3
-//                           10:3 11:3 12:3 13:3 14:3
-//                           20:3 21:3 22:3 23:3 24:3
-//                           30:3 31:3 32:3 33:3 34:3
-//                           40:3 41:3 42:3 43:3 44:3
+// Notice that vertical rotation to and from the back face (face 5) requires a flip
+//
+//
+//                 1
+//                 00 01 02 03 04
+//                 10 11 12 13 14
+//                 20 21 22 23 24
+//                 30 31 32 33 34
+//                 40 41 42 43 44
+// 3               0               4               5
+// 00 01 02 03 04  00 01 02 03 04  00 01 02 03 04  00 01 02 03 04
+// 10 11 12 13 14  10 11 12 13 14  10 11 12 13 14	 10 11 12 13 14
+// 20 21 22 23 24  20 21 22 23 24  20 21 22 23 24	 20 21 22 23 24
+// 30 31 32 33 34  30 31 32 33 34  30 31 32 33 34	 30 31 32 33 34
+// 40 41 42 43 44  40 41 42 43 44  40 41 42 43 44	 40 41 42 43 44
+//                 2
+//                 00 01 02 03 04
+//                 10 11 12 13 14
+//                 20 21 22 23 24
+//                 30 31 32 33 34
+//                 40 41 42 43 44
+//
+//
+//
+//                       1
+//                       00 01 02 03 04 05 06
+//                       10 11 12 13 14 15 16
+//                       20 21 22 23 24 25 26
+//                       30 31 32 33 34 35 36
+//                       40 41 42 43 44 45 46
+//                       50 51 52 53 54 55 56
+//                       60 61 62 63 64 65 66
+//
+// 3                     0                     4                     5
+// 00 01 02 03 04 05 06  00 01 02 03 04 05 06  00 01 02 03 04 05 06  00 01 02 03 04 05 06
+// 10 11 12 13 14 15 16  10 11 12 13 14 15 16  10 11 12 13 14 15 16	 10 11 12 13 14 15 16
+// 20 21 22 23 24 25 26  20 21 22 23 24 25 26  20 21 22 23 24 25 26	 20 21 22 23 24 25 26
+// 30 31 32 33 34 35 36  30 31 32 33 34 35 36  30 31 32 33 34 35 36	 30 31 32 33 34 35 36
+// 40 41 42 43 44 45 46  40 41 42 43 44 45 46  40 41 42 43 44 45 46	 40 41 42 43 44 45 46
+// 50 51 52 53 54 55 56  50 51 52 53 54	55 56  50 51 52 53 54 55 56  50 51 52 53 54 55 56
+// 60 61 62 63 64 65 66	 60 61 62 63 64 65 66  60 61 62 63 64 65 66  60 61 62 63 64 65 66
+//
+//                       2
+//                       00 01 02 03 04 05 06
+//                       10 11 12 13 14 15 16
+//                       20 21 22 23 24 25 26
+//                       30 31 32 33 34 35 36
+//                       40 41 42 43 44 45 46
+//                       50 51 52 53 54 55 56
+//                       60 61 62 63 64 65 66
+//
 
 constexpr auto FRONT  = 0;
-constexpr auto LEFT   = 3;
-constexpr auto RIGHT  = 4;
 constexpr auto TOP    = 1;
 constexpr auto BOTTOM = 2;
+constexpr auto LEFT   = 3;
+constexpr auto RIGHT  = 4;
 constexpr auto BACK   = 5;
 
 class Cube {
@@ -45,6 +78,12 @@ public:
 			f->initColor(i+1);
 			face[i] = f;
 		}
+		face[FRONT]->initColor('W');
+		face[TOP]->initColor('B');
+		face[BOTTOM]->initColor('G');
+		face[LEFT]->initColor('O');
+		face[RIGHT]->initColor('R');
+		face[BACK]->initColor('Y');
 	}
 
 	~Cube() {
@@ -54,6 +93,8 @@ public:
 	}
 
 	void rotateCubeUp() {
+		// BACK = TOP (for example) means moving from TOP to BACK
+		// BACK <- TOP or BOTTOM (and vice versa) require a rotateTwice (flip)
 		Face* front = face[FRONT];
 		face[FRONT] = face[BOTTOM];
 		face[BOTTOM] = face[BACK];
@@ -62,11 +103,16 @@ public:
 		face[LEFT]->rotateCCW();
 		face[RIGHT]->rotateCW();
 
+		face[BOTTOM]->rotateTwice();
+		face[BACK]->rotateTwice();
+
 		std::cout << "Cube::" << __FUNCTION__ << "\n";
 		print(std::cout);
 	}
 
 	void rotateCubeDown() {
+		// BACK = TOP (for example) means moving from TOP to BACK
+		// BACK <- TOP or BOTTOM (and vice versa) require a rotateTwice (flip)
 		Face* front = face[FRONT];
 		face[FRONT] = face[TOP];
 		face[TOP] = face[BACK];
@@ -74,6 +120,9 @@ public:
 		face[BOTTOM] = front;
 		face[LEFT]->rotateCW();
 		face[RIGHT]->rotateCCW();
+
+		face[TOP]->rotateTwice();
+		face[BACK]->rotateTwice();
 
 		std::cout << "Cube::" << __FUNCTION__ << "\n";
 		print(std::cout);
@@ -111,6 +160,11 @@ public:
 		face[LEFT] = face[BOTTOM];
 		face[BOTTOM] = face[RIGHT];
 		face[RIGHT] = top;
+
+		face[TOP]->rotateCW();
+		face[BOTTOM]->rotateCW();
+		face[LEFT]->rotateCW();
+		face[RIGHT]->rotateCW();
 		face[FRONT]->rotateCW();
 		face[BACK]->rotateCCW();
 
@@ -124,6 +178,11 @@ public:
 		face[RIGHT] = face[BOTTOM];
 		face[BOTTOM] = face[LEFT];
 		face[LEFT] = top;
+
+		face[TOP]->rotateCCW();
+		face[BOTTOM]->rotateCCW();
+		face[LEFT]->rotateCCW();
+		face[RIGHT]->rotateCCW();
 		face[FRONT]->rotateCCW();
 		face[BACK]->rotateCW();
 
@@ -132,18 +191,21 @@ public:
 	}
 
 	void rotateCubeUp2() {
+		// FIXME: optimize
 		std::cout << "Cube::" << __FUNCTION__ << "\n";
 		rotateCubeUp();
 		rotateCubeUp();
 	}
 
 	void rotateCubeLeft2() {
+		// FIXME: optimize
 		std::cout << "Cube::" << __FUNCTION__ << "\n";
 		rotateCubeLeft();
 		rotateCubeLeft();
 	}
 
 	void rotateCubeSpin2() {
+		// FIXME: optimize
 		std::cout << "Cube::" << __FUNCTION__ << "\n";
 		rotateCubeSpinCW();
 		rotateCubeSpinCW();
@@ -175,7 +237,7 @@ public:
 		}
 	}
 
-	int findCubeByColor(int color) {
+	int findCubeByColor(Cubelet::color_t color) {
 		for (int f = 0; f < 6; ++f) {
 			if (face[f]->faceColor() == color) {
 				return f;
@@ -185,17 +247,19 @@ public:
 	}
 
 	/// rotates cube to place specified face to the front based on face color
-	void rotateCubeToFrontByColor(int color) {
+	void rotateCubeToFrontByColor(Cubelet::color_t color) {
 		std::cout << "Cube::" << __FUNCTION__ << "(" << color << ")\n";
 		rotateCubeToFront(findCubeByColor(color));
 	}
 
 	void rotateColumnUp(int col) {
+		// INVESTIGATE: compensate for BACK flip?
 		for (int i = CUBE_SIZE; i--;) {
 			Cubelet::rotate4(
 				face[FRONT]->cface[i][col],
 				face[TOP]->cface[i][col],
-				face[BACK]->cface[i][col],
+				//face[BACK]->cface[i][col],
+				face[BACK]->cface[CUBE_SIZE - 1 - i][CUBE_SIZE - 1 - col],
 				face[BOTTOM]->cface[i][col]);
 		}
 		if (col == 0) {
@@ -214,7 +278,8 @@ public:
 			Cubelet::rotate4(
 				face[FRONT]->cface[i][col],
 				face[BOTTOM]->cface[i][col],
-				face[BACK]->cface[i][col],
+				//face[BACK]->cface[i][col],
+				face[BACK]->cface[CUBE_SIZE - 1 - i][CUBE_SIZE - 1 - col],
 				face[TOP]->cface[i][col]);
 		}
 		if (col == 0) {
@@ -370,6 +435,30 @@ public:
 		print(std::cout);
 	}
 
+	void rotateFaceCW(int face) {
+		std::cout << "Cube::" << __FUNCTION__ << "(" << face << ")\n";
+		switch (face) {
+		case FRONT:
+			rotateSliceCW(0);
+			break;
+		case BACK:
+			rotateSliceCW(CUBE_SIZE-1);
+			break;
+		case TOP:
+			rotateRowLeft(0);
+			break;
+		case BOTTOM:
+			rotateRowRight(CUBE_SIZE - 1);
+			break;
+		case LEFT:
+			rotateColumnDown(0);
+			break;
+		case RIGHT:
+			rotateColumnUp(CUBE_SIZE - 1);
+			break;
+		}
+	}
+
 	// rotate a slice or layer clockwise (slice=0 is top layer)
 	// (equvilant to rotateCubeLeft, rotateColumnDown(slice), rotateCubeRight)
 	void restoreFrontRotation(int rot) {
@@ -395,6 +484,7 @@ public:
 	}
 
 	void scramble(int iterations = 200) {
+		std::cout << "Cube::" << __FUNCTION__ << " STARTED\n";
 		for (int x = iterations; x--;) {
 			int r = std::rand() % 20;
 			switch (r) {
@@ -450,8 +540,7 @@ public:
 			}
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
-		print(std::cout);
+		std::cout << "Cube::" << __FUNCTION__ << " COMPLETE\n";
 	}
 
 	bool isSolved() const {
@@ -480,7 +569,7 @@ public:
 	void solveFaceCenterPart1() {
 		int start = CENTER + 1;
 		int end = CUBE_SIZE - 2;
-		int color = face[FRONT]->faceColor();
+		Cubelet::color_t color = face[FRONT]->faceColor();
 		int rotation = face[FRONT]->faceRotation();
 
 		for (int row = start; row <= end; ++row) {
@@ -494,10 +583,11 @@ public:
 					// rotate each face up to 4 times
 					for (int s = 4; s--;) {
 						if (face[f]->cface[row][CENTER].color != color) {
+							rotateFaceCW(f);
 							// turn to that face, rotate the face, then move back.
-							rotateCubeToFront(f);
-							rotateSliceCW(0);
-							rotateCubeToFrontByColor(color);
+							//rotateCubeToFront(f);
+							//rotateSliceCW(0);
+							//rotateCubeToFrontByColor(color);
 						}
 						else {
 							// found a match! Now move it to the front
@@ -557,16 +647,17 @@ public:
 	void solveFaceCenterPart2() {
 		int start = CENTER;
 		int end = CUBE_SIZE - 2;
-		int color = face[FRONT]->faceColor();
-		int	rotation = face[FRONT]->faceRotation();
+		Cubelet::color_t origColor = face[FRONT]->faceColor();
+		int origRotation = face[FRONT]->faceRotation();
+		int	rotation = origRotation;
 
 		// for each column in part 2...
-		for (int col = CENTER + 1; col <= CUBE_SIZE - 2; ++col) {
+		for (int col = 1; col <= CUBE_SIZE - 2; ++col) {
 			// is the column already done?
 			if (!face[FRONT]->isRangeSolved(start, col, end, col)) {
 				// if not, build it one at a time
 				//rotate to a face that is not solved
-				int workingFaceColor;
+				Cubelet::color_t workingFaceColor = -1;
 				for (int f = 1; f < 6; ++f) {
 					if (!face[f]->isCenterSolved()) {
 						rotateCubeToFront(f);
@@ -575,7 +666,7 @@ public:
 					}
 				}
 				for (int row = start; row <= end; ++row) {
-					if (face[FRONT]->cface[row][col].color != color) {
+					if (face[FRONT]->cface[row][col].color != origColor) {
 						// find a cubelet the correct color and in the correct position and move it to here
 						// search all the faces
 						bool found = false;
@@ -583,17 +674,18 @@ public:
 						for (int f = 0; f < 6; ++f) {
 							// FIXME: for now, don't search for blocks on the face we are trying to solve.
 							// (need to make sure we don't take blocks from the parts that we have already solved.)
-							if (face[f]->faceColor() == color) {
+							if (face[f]->faceColor() == origColor) {
 								continue;
 							}
 							// rotate each face up to 4 times
 							for (int s = 4; s--;) {
-								if (face[f]->cface[row][col].color != color) {
+								if (face[f]->cface[row][col].color != origColor) {
+									rotateFaceCW(f);
 									// turn to that face, rotate the face, then move back.
-									int saveColor = face[FRONT]->faceColor();
-									rotateCubeToFront(f);
-									rotateSliceCW(0);
-									rotateCubeToFrontByColor(saveColor);
+									//Cubelet::color_t saveColor = face[FRONT]->faceColor();
+									//rotateCubeToFront(f);
+									//rotateSliceCW(0);
+									//rotateCubeToFrontByColor(saveColor);
 								}
 								else {
 									// found a match! Now move it to the working face
@@ -606,11 +698,21 @@ public:
 										}
 										else {
 											int delta = rotation - face[FRONT]->faceRotation();
-											if ((delta == 3) || (delta == -1)) {
+											if (delta < 0) {
+												delta += 4;
+											}
+											if (((col > CENTER) && (delta == 3)) || 
+												(col < CENTER) && (delta == 1)) {
 												rotateColumnUp(col);
-												rotateSliceCW(0);
+												if (col > CENTER) {
+													rotateSliceCW(0);
+												}
+												else {
+													rotateSliceCCW(0);
+												}
 												rotateColumnDown(col);
 											}
+											// FIXME: always going right here sometimes collides with the face we are trying to build!
 											rotateRowRight(row);
 											restoreFrontRotation(rotation);
 											rotateRowLeft(row);
@@ -625,14 +727,14 @@ public:
 										}
 										else {
 											rotateRowTwice(row);
-											if (row > CENTER) {
+											if (col > CENTER) {
 												rotateSliceCCW(0);
 											}
 											else {
 												rotateSliceCW(0);
 											}
 											rotateRowTwice(row);
-											if (row > CENTER) {
+											if (col > CENTER) {
 												rotateSliceCW(0);
 											}
 											else {
@@ -645,6 +747,7 @@ public:
 										// spin and then do left
 										rotateCubeSpinCW();
 										rotateSliceCCW(0);
+										rotateColumnUp(0);
 										// YES, I want to drop down to LEFT
 									case LEFT:
 										if (row == CENTER) {
@@ -656,14 +759,14 @@ public:
 										}
 										else {
 											rotateRowRight(row);
-											if (row > CENTER) {
+											if (col > CENTER) {
 												rotateSliceCCW(0);
 											}
 											else {
 												rotateSliceCW(0);
 											}
 											rotateRowLeft(row);
-											if (row > CENTER) {
+											if (col > CENTER) {
 												rotateSliceCW(0);
 											}
 											else {
@@ -675,6 +778,7 @@ public:
 										// spin and then do right
 										rotateCubeSpinCW();
 										rotateSliceCCW(0);
+										rotateColumnDown(CUBE_SIZE - 1);
 										// YES, I want to drop down to RIGHT
 									case RIGHT:
 										if (row == CENTER) {
@@ -686,24 +790,24 @@ public:
 										}
 										else {
 											rotateRowLeft(row);
-											if (row > CENTER) {
+											if (col > CENTER) {
 												rotateSliceCCW(0);
 											}
 											else {
 												rotateSliceCW(0);
 											}
 											rotateRowRight(row);
-											if (row > CENTER) {
+											if (col > CENTER) {
 												rotateSliceCW(0);
 											}
 											else {
 												rotateSliceCCW(0);
 											}
 										}
-										if (row = CENTER) {
-											rotation = face[FRONT]->faceRotation();
-										}
 										break;
+									}
+									if (row == CENTER) {
+										rotation = face[FRONT]->faceRotation();
 									}
 									break;
 								}
@@ -713,8 +817,8 @@ public:
 					}
 				}
 
-				rotateCubeToFrontByColor(color);
-				restoreFrontRotation(rotation);
+				rotateCubeToFrontByColor(origColor);
+				restoreFrontRotation(origRotation);
 				// move this set to the face we are solving
 				switch (findCubeByColor(workingFaceColor)) {
 				case FRONT:
@@ -751,7 +855,7 @@ public:
 					// spin and then do bottom
 					rotateCubeSpinCW();
 					rotateSliceCCW(0);
-					//rotateRowLeft(CUBE_SIZE - 1);
+					rotateRowLeft(CUBE_SIZE - 1);
 					// YES, I want to drop down to BOTTOM
 				case BOTTOM:
 					rotateColumnUp(col);
@@ -773,228 +877,10 @@ public:
 
 			}
 		}
-		restoreFrontRotation(rotation);
+		//restoreFrontRotation(origRotation);
 	}
 
 	void solveFaceCenterPart3() {
-		int start = CENTER;
-		int end = CUBE_SIZE - 2;
-		int color = face[FRONT]->faceColor();
-		int	rotation = face[FRONT]->faceRotation();
-
-		// for each column in part 2...
-		for (int col = CENTER - 1; col >= 1; --col) {
-			// is the column already done?
-			if (!face[FRONT]->isRangeSolved(start, col, end, col)) {
-				// if not, build it one at a time
-				//rotate to a face that is not solved
-				int workingFaceColor;
-				for (int f = 1; f < 6; ++f) {
-					if (!face[f]->isCenterSolved()) {
-						rotateCubeToFront(f);
-						workingFaceColor = face[FRONT]->faceColor();
-						break;
-					}
-				}
-				for (int row = start; row <= end; ++row) {
-					if (face[FRONT]->cface[row][col].color != color) {
-						// find a cubelet the correct color and in the correct position and move it to here
-						// search all the faces
-						bool found = false;
-						// for (int f = 6; f--;)
-						for (int f = 0; f < 6; ++f) {
-							// FIXME: for now, don't search for blocks on the face we are trying to solve.
-							// (need to make sure we don't take blocks from the parts that we have already solved.)
-							if (face[f]->faceColor() == color) {
-								continue;
-							}
-							// rotate each face up to 4 times
-							for (int s = 4; s--;) {
-								if (face[f]->cface[row][col].color != color) {
-									// turn to that face, rotate the face, then move back.
-									int saveColor = face[FRONT]->faceColor();
-									rotateCubeToFront(f);
-									rotateSliceCW(0);
-									rotateCubeToFrontByColor(saveColor);
-								}
-								else {
-									// found a match! Now move it to the working face
-									found = true;
-									switch (f) {
-									case FRONT:
-										if (row == CENTER) {
-											// if first block, we don't care about the state of all the other blocks
-											// coincidentially, the center block MUST be moved first
-										}
-										else {
-											int delta = rotation - face[FRONT]->faceRotation();
-											if ((delta == 3) || (delta == -1)) {
-												rotateColumnUp(col);
-												rotateSliceCW(0);
-												rotateColumnDown(col);
-											}
-											rotateRowRight(row);
-											restoreFrontRotation(rotation);
-											rotateRowLeft(row);
-										}
-										break;
-									case BACK:
-										if (row == CENTER) {
-											rotateColumnTwice(col);
-											rotateSliceCW(0);
-											rotateColumnTwice(col);
-											rotateSliceCCW(0);
-										}
-										else {
-											rotateRowTwice(row);
-											if (col > CENTER) {
-												rotateSliceCCW(0);
-											}
-											else {
-												rotateSliceCW(0);
-											}
-											rotateRowTwice(row);
-											if (col > CENTER) {
-												rotateSliceCW(0);
-											}
-											else {
-												rotateSliceCCW(0);
-											}
-										}
-										break;
-
-									case BOTTOM:
-										// spin and then do left
-										rotateCubeSpinCW();
-										rotateSliceCCW(0);
-										// YES, I want to drop down to LEFT
-									case LEFT:
-										if (row == CENTER) {
-											rotateSliceCW(0);
-											rotateColumnDown(0);
-											rotateRowRight(col);
-											rotateSliceCCW(0);
-											rotateRowLeft(col);
-										}
-										else {
-											rotateRowRight(row);
-											if (col > CENTER) {
-												rotateSliceCCW(0);
-											}
-											else {
-												rotateSliceCW(0);
-											}
-											rotateRowLeft(row);
-											if (col > CENTER) {
-												rotateSliceCW(0);
-											}
-											else {
-												rotateSliceCCW(0);
-											}
-										}
-										break;
-									case TOP:
-										// spin and then do right
-										rotateCubeSpinCW();
-										rotateSliceCCW(0);
-										// YES, I want to drop down to RIGHT
-									case RIGHT:
-										if (row == CENTER) {
-											rotateSliceCW(0);
-											rotateColumnUp(CUBE_SIZE - 1);
-											rotateRowLeft(col);
-											rotateSliceCCW(0);
-											rotateRowRight(col);
-										}
-										else {
-											rotateRowLeft(row);
-											if (col > CENTER) {
-												rotateSliceCCW(0);
-											}
-											else {
-												rotateSliceCW(0);
-											}
-											rotateRowRight(row);
-											if (col > CENTER) {
-												rotateSliceCW(0);
-											}
-											else {
-												rotateSliceCCW(0);
-											}
-										}
-										if (row = CENTER) {
-											rotation = face[FRONT]->faceRotation();
-										}
-										break;
-									}
-									break;
-								}
-							}
-							if (found) break;
-						}
-					}
-				}
-
-				rotateCubeToFrontByColor(color);
-				restoreFrontRotation(rotation);
-				// move this set to the face we are solving
-				switch (findCubeByColor(workingFaceColor)) {
-				case FRONT:
-					// shouldn't happen
-					break;
-				case BACK:
-					rotateSliceTwice(0);
-					rotateColumnTwice(col);
-					rotateSliceTwice(0);
-					break;
-				case LEFT:
-					// spin and then do top
-					rotateCubeSpinCW();
-					rotateSliceCCW(0);
-					rotateRowRight(0);
-					// YES, I want to drop down to TOP
-				case TOP:
-					rotateColumnDown(col);
-					if (col > CENTER) {
-						rotateSliceCW(0);
-					}
-					else {
-						rotateSliceCCW(0);
-					}
-					rotateColumnUp(col);
-					if (col > CENTER) {
-						rotateSliceCCW(0);
-					}
-					else {
-						rotateSliceCW(0);
-					}
-					break;
-				case RIGHT:
-					// spin and then do bottom
-					rotateCubeSpinCW();
-					rotateSliceCCW(0);
-					//rotateRowLeft(CUBE_SIZE - 1);
-					// YES, I want to drop down to BOTTOM
-				case BOTTOM:
-					rotateColumnUp(col);
-					if (col > CENTER) {
-						rotateSliceCW(0);
-					}
-					else {
-						rotateSliceCCW(0);
-					}
-					rotateColumnDown(col);
-					if (col > CENTER) {
-						rotateSliceCCW(0);
-					}
-					else {
-						rotateSliceCW(0);
-					}
-					break;
-				}
-
-			}
-		}
 	}
 
 
@@ -1023,7 +909,7 @@ public:
 
 		solveFaceCenterPart2();
 
-		solveFaceCenterPart3();
+		//solveFaceCenterPart3();
 
 		solveFaceCenterPart4();
 	}
@@ -1044,9 +930,46 @@ public:
 
 			// do steps to solve the center of current face
 			solveCurrentFaceCenter();
+			break;//debugging
 		}
 	}
 
+
+	// 3x3 algorithms
+	//1) F' U L' U' - flip side
+	//2) R' D' R D - rotate corner
+	//3) U R U' R' U' F' U F - get piece from top middle to right middle
+	//4) U' L' U L U F U' F' - get piece from top middle to left middle
+	//5) F R U R' U' F' - repeat to get cross on top
+	//6) R U R' U R U U R' U - match back and R, get top middle to match
+	//7) U R U' L' U R' U' L - corners; put correct corner at F top right
+	//
+	// F  = rotateSliceCW(0)
+	// F' = rotateSliceCCW(0)
+	// B  = rotateSliceCCW(CUBE_SIZE-1)
+	// B' = rotateSliceCW(CUBE_SIZE-1)
+	// R  = rotateColumnUp(CUBE_SIZE-1)
+	// R' = rotateColumnDown(CUBE_SIZE-1)
+	// L  = rotateColumnDown(0)
+	// L' = rotateColumnUp(0)
+	// U  = rotateRowLeft(0)
+	// U' = rotateRowRight(0)
+	// D  = rotateRowRight(CUBE_SIZE-1)
+	// D' = rotateRowLeft(CUBE_SIZE-1)
+
+	void algoRotateCornerRD() {
+		rotateColumnDown(CUBE_SIZE - 1); // R'
+		rotateRowLeft(CUBE_SIZE - 1); // D'
+		rotateColumnUp(CUBE_SIZE - 1); // R
+		rotateRowRight(CUBE_SIZE - 1); // D
+	}
+
+	void algoRotateCornerLD() {
+		rotateColumnDown(0); // L
+		rotateRowRight(CUBE_SIZE - 1); // D
+		rotateColumnUp(0); // L'
+		rotateRowLeft(CUBE_SIZE - 1); // D'
+	}
 
 	void printRow(std::ostream& s, Face* face, int row) const {
 		for (int col = 0; col < CUBE_SIZE; ++col) {
@@ -1055,32 +978,33 @@ public:
 	}
 
 	void print(std::ostream& s) const {
+		std::string spacing(CUBE_SIZE * 2 + 1, ' ');
+		s << spacing << face[TOP]->faceColor() << ' ' << face[TOP]->m_rotation << "\n";
 		for (int row = 0; row < CUBE_SIZE; ++row) {
-			for (int col = 0; col < CUBE_SIZE; ++col) {
-				s << "  ";
-			}
-			s << ' ';
-			printRow(s, face[1], row);
+			s << spacing;
+			printRow(s, face[TOP], row);
 			s << '\n';
 		}
 		s << '\n';
+		s << face[LEFT]->faceColor() << ' ' << face[LEFT]->m_rotation << std::string((CUBE_SIZE * 2 + 1) - 3, ' ');
+		s << face[FRONT]->faceColor() << ' ' << face[FRONT]->m_rotation << std::string((CUBE_SIZE * 2 + 1) - 3, ' ');
+		s << face[RIGHT]->faceColor() << ' ' << face[RIGHT]->m_rotation << std::string((CUBE_SIZE * 2 + 1) - 3, ' ');
+		s << face[BACK]->faceColor() << ' ' << face[BACK]->m_rotation << "\n";
 		for (int row = 0; row < CUBE_SIZE; ++row) {
-			printRow(s, face[3], row);
+			printRow(s, face[LEFT], row);
 			s << ' ';
-			printRow(s, face[0], row);
+			printRow(s, face[FRONT], row);
 			s << ' ';
-			printRow(s, face[4], row);
+			printRow(s, face[RIGHT], row);
 			s << ' ';
-			printRow(s, face[5], row);
+			printRow(s, face[BACK], row);
 			s << '\n';
 		}
 		s << '\n';
+		s << spacing << face[BOTTOM]->faceColor() << ' ' << face[BOTTOM]->m_rotation << "\n";
 		for (int row = 0; row < CUBE_SIZE; ++row) {
-			for (int col = 0; col < CUBE_SIZE; ++col) {
-				s << "  ";
-			}
-			s << ' ';
-			printRow(s, face[2], row);
+			s << spacing;
+			printRow(s, face[BOTTOM], row);
 			s << '\n';
 		}
 		s << '\n';
