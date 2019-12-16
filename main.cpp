@@ -11,6 +11,8 @@ int main() {
 	std::cout << "\n";
 	std::cout << "Scramble...\n";
 	cube.scramble(25);
+	cube.print(std::cout);
+	cube.setcon(&std::cout);
 
 	cube.solveFaceCenters();
 

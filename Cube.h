@@ -71,6 +71,7 @@ public:
 			std::cerr << "cube dimension must be odd\n";
 			throw std::exception("cube dimension must be odd");
 		}
+		m_con = 0;
 
 		//std::srand((unsigned)std::time(nullptr));
 		for (int i = 6; i--;) {
@@ -92,6 +93,10 @@ public:
 		}
 	}
 
+	void setcon(std::ostream* console) {
+		m_con = console;
+	}
+
 	void rotateCubeUp() {
 		// BACK = TOP (for example) means moving from TOP to BACK
 		// BACK <- TOP or BOTTOM (and vice versa) require a rotateTwice (flip)
@@ -106,8 +111,8 @@ public:
 		face[BOTTOM]->rotateTwice();
 		face[BACK]->rotateTwice();
 
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateCubeDown() {
@@ -124,8 +129,8 @@ public:
 		face[TOP]->rotateTwice();
 		face[BACK]->rotateTwice();
 
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateCubeLeft() {
@@ -137,8 +142,8 @@ public:
 		face[TOP]->rotateCW();
 		face[BOTTOM]->rotateCCW();
 
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateCubeRight() {
@@ -150,8 +155,8 @@ public:
 		face[TOP]->rotateCCW();
 		face[BOTTOM]->rotateCW();
 
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateCubeSpinCW() {
@@ -168,8 +173,8 @@ public:
 		face[FRONT]->rotateCW();
 		face[BACK]->rotateCCW();
 
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateCubeSpinCCW() {
@@ -186,34 +191,34 @@ public:
 		face[FRONT]->rotateCCW();
 		face[BACK]->rotateCW();
 
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateCubeUp2() {
 		// FIXME: optimize
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
 		rotateCubeUp();
 		rotateCubeUp();
 	}
 
 	void rotateCubeLeft2() {
 		// FIXME: optimize
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
 		rotateCubeLeft();
 		rotateCubeLeft();
 	}
 
 	void rotateCubeSpin2() {
 		// FIXME: optimize
-		std::cout << "Cube::" << __FUNCTION__ << "\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "\n";
 		rotateCubeSpinCW();
 		rotateCubeSpinCW();
 	}
 
 	// rotates specified cube face to the front
 	void rotateCubeToFront(int side) {
-		std::cout << "Cube::" << __FUNCTION__ << "(" << side << ")\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << side << ")\n";
 		switch (side) {
 		default:
 		case FRONT:
@@ -239,7 +244,7 @@ public:
 
 	// rotates specified cube face to the specified face position
 	void rotateCubeFaceToPos(int side, int pos) {
-		std::cout << "Cube::" << __FUNCTION__ << "(" << side << ", " << pos << ")\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << side << ", " << pos << ")\n";
 		if (side == pos) {
 			return;
 		}
@@ -281,7 +286,7 @@ public:
 
 	// rotates cube to place specified face to the front based on face color
 	void rotateCubeToFrontByColor(Cubelet::color_t color) {
-		std::cout << "Cube::" << __FUNCTION__ << "(" << color << ")\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << color << ")\n";
 		rotateCubeToFront(findCubeByColor(color));
 	}
 
@@ -301,8 +306,8 @@ public:
 			face[RIGHT]->rotateCW();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << col << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << col << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateColumnDown(int col) {
@@ -321,8 +326,8 @@ public:
 			face[RIGHT]->rotateCCW();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << col << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << col << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateColumnTwice(int col) {
@@ -341,8 +346,8 @@ public:
 			face[RIGHT]->rotateTwice();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << col << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << col << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateRowLeft(int row) {
@@ -360,8 +365,8 @@ public:
 			face[BOTTOM]->rotateCCW();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << row << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << row << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateRowRight(int row) {
@@ -379,8 +384,8 @@ public:
 			face[BOTTOM]->rotateCW();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << row << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << row << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	void rotateRowTwice(int row) {
@@ -399,8 +404,8 @@ public:
 			face[BOTTOM]->rotateTwice();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << row << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << row << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	// rotate slice clockwise (slice=0 is top layer)
@@ -420,8 +425,8 @@ public:
 			face[BACK]->rotateCCW();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << slice << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << slice << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	// rotate slice counter-clockwise (slice=0 is top layer)
@@ -441,8 +446,8 @@ public:
 			face[BACK]->rotateCW();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << slice << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << slice << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	// rotate slice twice (slice=0 is top layer)
@@ -463,13 +468,13 @@ public:
 			face[BACK]->rotateTwice();
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << "(" << slice << ")\n";
-		print(std::cout);
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << slice << ")\n";
+		if (m_con) print(*m_con);
 	}
 
 	// rotate the specified face clockwise
 	void rotateFaceCW(int side) {
-		std::cout << "Cube::" << __FUNCTION__ << "(" << side << ")\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << side << ")\n";
 		switch (side) {
 		case FRONT:
 			rotateSliceCW(0);
@@ -496,7 +501,7 @@ public:
 	void restoreFrontRotation(int rot) {
 		// rot = new rotation
 		// faceRotation() = current rotation
-		std::cout << "Cube::" << __FUNCTION__ << "(" << rot << ") (was " << face[FRONT]->faceRotation() << ")\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << "(" << rot << ") (was " << face[FRONT]->faceRotation() << ")\n";
 		switch (rot - face[FRONT]->faceRotation()) {
 		case 0:
 			break;
@@ -517,7 +522,7 @@ public:
 
 	// repeatedly and randomly call various move functions to scramble the cube
 	void scramble(int iterations = 200) {
-		std::cout << "Cube::" << __FUNCTION__ << " STARTED\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << " STARTED\n";
 		for (int x = iterations; x--;) {
 			int r = std::rand() % 20;
 			switch (r) {
@@ -573,7 +578,7 @@ public:
 			}
 		}
 
-		std::cout << "Cube::" << __FUNCTION__ << " COMPLETE\n";
+		if (m_con) *m_con << "Cube::" << __FUNCTION__ << " COMPLETE\n";
 	}
 
 	// Is the cube solved?
@@ -1090,4 +1095,5 @@ public:
 
 	Face* face[6];
 	const int CENTER = CUBE_SIZE / 2;
+	std::ostream* m_con;
 };
