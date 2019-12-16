@@ -8,7 +8,6 @@ class Face {
 public:
 	const int CENTER = CUBE_SIZE / 2;
 	Cubelet cface[CUBE_SIZE][CUBE_SIZE];
-	//Cubelet::color_t m_faceColor; // color that this side should be
 	unsigned m_rotation;
 
 	Face() {
@@ -23,14 +22,14 @@ public:
 				cface[row][col].pos = row * CUBE_SIZE + col;
 			}
 		}
-		//m_faceColor = color;
+		m_faceColor = color;
 	}
 
 	Cubelet::color_t faceColor() const {
 		if (CUBE_SIZE % 2 == 1) {
 			return cface[CENTER][CENTER].color;
 		}
-		//return m_faceColor;
+		return m_faceColor;
 	}
 
 	int faceRotation() const {
@@ -60,7 +59,7 @@ public:
 	}
 
 	bool isRangeSolved(int startRow, int startCol, int endRow, int endCol) {
-		int color = faceColor();
+		Cubelet::color_t color = faceColor();
 		for (int r = startRow; r <= endRow; ++r) {
 			for (int c = startCol; c <= endCol; ++c) {
 				if (cface[r][c].color != color)
@@ -172,4 +171,6 @@ public:
 		}
 	}
 
+private:
+	Cubelet::color_t m_faceColor;
 };

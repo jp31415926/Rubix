@@ -10,7 +10,7 @@ int main() {
 
 	std::cout << "\n";
 	std::cout << "Scramble...\n";
-	cube.scramble(35);
+	cube.scramble(25);
 
 	cube.solveFaceCenters();
 
