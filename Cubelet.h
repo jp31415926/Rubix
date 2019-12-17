@@ -26,6 +26,10 @@ public:
 		s4.rot = (s4.rot + faceRotation) & 3;
 	}
 
+	void adjustRotation(int delta) {
+		rot = (rot + delta) & 3;
+	}
+
 	static void swap(Cubelet& s1, Cubelet& s2, int faceRotation = 0) {
 		std::swap(s1, s2);
 		s1.rot = (s1.rot + faceRotation) & 3;

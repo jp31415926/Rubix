@@ -5,16 +5,23 @@
 int main() {
 	Cube cube;
 
-	cube.print(std::cout);
-	//test(cube);
+	//cube.printPos(std::cout);
+	//cube.setcon(&std::cout);
+	//for (int slice = CUBE_SIZE; slice--;) {
+	//	cube.rotateSliceTwice(slice);
+	//}
 
-	std::cout << "\n";
+	//cube.printPos(std::cout);
+	//return 0;
+
 	std::cout << "Scramble...\n";
-	cube.scramble(25);
+	cube.scramble(10, true);
 	cube.print(std::cout);
 	cube.setcon(&std::cout);
 
-	cube.solveFaceCenters();
+	cube.solve3x3();
+
+	//cube.solveFaceCenters();
 
 	return 0;
 }

@@ -36,10 +36,17 @@ public:
 		return m_rotation;
 	}
 
-	bool isSolved() const {
+	void adjustRotation(int rot) {
+		m_rotation = (m_rotation + rot) & 3;
+	}
+
+	bool isSolved(Cubelet::color_t color = -1) const {
+		if (color == -1) {
+			color = faceColor();
+		}
 		for (int row = CUBE_SIZE; row--;) {
 			for (int col = CUBE_SIZE; col--;) {
-				if ((cface[row][col].color) != faceColor()) {
+				if ((cface[row][col].color) != color) {
 					return false;
 				}
 			}
@@ -157,6 +164,7 @@ public:
 				Cubelet::swap(cface[start][x], cface[end][end + start - x], 2);
 				Cubelet::swap(cface[end + start - x][start], cface[x][end], 2);
 			}
+			cface[CENTER][CENTER].rot = (cface[CENTER][CENTER].rot + 2) & 3;
 		}
 		m_rotation = (m_rotation + 2) & 3;
 	}
