@@ -3,25 +3,34 @@
 #include "Cube.h"
 
 int main() {
-	Cube cube;
+	//Cube cube;
 
 	//cube.printPos(std::cout);
 	//cube.setcon(&std::cout);
-	//for (int slice = CUBE_SIZE; slice--;) {
-	//	cube.rotateSliceTwice(slice);
-	//}
-
+	//cube.rotateCubeRight();
 	//cube.printPos(std::cout);
+
+	//cube.scramble(11, true);
+	//cube.setcon(&std::cout);
+	//cube.solve3x3();
 	//return 0;
 
-	std::cout << "Scramble...\n";
-	cube.scramble(10, true);
-	cube.print(std::cout);
-	cube.setcon(&std::cout);
+	//cube.printPos(std::cout);
 
-	cube.solve3x3();
+	for (int pass = 10; pass < 1000; ++pass) {
+		Cube cube;
+		std::cout << "Pass " << pass << "\n";
+		cube.scramble(pass, true);
 
-	//cube.solveFaceCenters();
+		cube.setcon(&std::cout);
+		cube.print(std::cout);
+		bool result = cube.solve3x3();
+		if (!result || !cube.isSolved()) {
+			std::cout << "Pass " << pass << " FAILED!\n";
+			cube.print(std::cout);
+			break;
+		}
+	}
 
 	return 0;
 }
@@ -78,12 +87,12 @@ int test(Cube& cube) {
 	cube.rotateColumnUp(0);
 	return 0;
 
-	cube.algoRotateCornerRD();
-	cube.algoRotateCornerRD();
-	cube.algoRotateCornerRD();
-	cube.algoRotateCornerRD();
-	cube.algoRotateCornerRD();
-	cube.algoRotateCornerRD();
+	cube.algo_RpDpRD();
+	cube.algo_RpDpRD();
+	cube.algo_RpDpRD();
+	cube.algo_RpDpRD();
+	cube.algo_RpDpRD();
+	cube.algo_RpDpRD();
 	return 0;
 
 	cube.rotateColumnTwice(0); // L2
