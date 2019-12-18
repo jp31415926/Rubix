@@ -17,7 +17,7 @@ int main() {
 
 	//cube.printPos(std::cout);
 
-	for (int pass = 10; pass < 1000; ++pass) {
+	for (int pass = 12; pass < 1000; ++pass) {
 		Cube cube;
 		std::cout << "Pass " << pass << "\n";
 		cube.scramble(pass, true);
@@ -85,14 +85,6 @@ int test(Cube& cube) {
 	cube.rotateColumnUp(0);
 	cube.rotateCubeSpinCW();
 	cube.rotateColumnUp(0);
-	return 0;
-
-	cube.algo_RpDpRD();
-	cube.algo_RpDpRD();
-	cube.algo_RpDpRD();
-	cube.algo_RpDpRD();
-	cube.algo_RpDpRD();
-	cube.algo_RpDpRD();
 	return 0;
 
 	cube.rotateColumnTwice(0); // L2

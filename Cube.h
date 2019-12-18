@@ -1085,48 +1085,6 @@ public:
 		}
 	}
 
-
-	// 3x3 algorithms
-	//1) F' U L' U' - flip side
-	//2) R' D' R D - rotate corner
-	//3) U R U' R' U' F' U F - get piece from top middle to right middle
-	//4) U' L' U L U F U' F' - get piece from top middle to left middle
-	//5) F R U R' U' F' - repeat to get cross on top
-	//6) R U R' U R U U R' U - match back and R, get top middle to match
-	//7) U R U' L' U R' U' L - corners; put correct corner at F top right
-	//
-	// F  = rotateSliceCW(0)
-	// F' = rotateSliceCCW(0)
-	// B  = rotateSliceCCW(CUBE_SIZE-1)
-	// B' = rotateSliceCW(CUBE_SIZE-1)
-	// R  = rotateColumnUp(CUBE_SIZE-1)
-	// R' = rotateColumnDown(CUBE_SIZE-1)
-	// L  = rotateColumnDown(0)
-	// L' = rotateColumnUp(0)
-	// U  = rotateRowLeft(0)
-	// U' = rotateRowRight(0)
-	// D  = rotateRowRight(CUBE_SIZE-1)
-	// D' = rotateRowLeft(CUBE_SIZE-1)
-
-	// brings corner from bottom right corner to top right corner
-	// U=FRONT D=BACK
-	// ALGO: R' D' R D
-	void algo_RpDpRD() {
-		rotateColumnDown(CUBE_SIZE - 1); // R'
-		rotateSliceCW(CUBE_SIZE - 1); // D'
-		rotateColumnUp(CUBE_SIZE - 1); // R
-		rotateSliceCCW(CUBE_SIZE - 1); // D
-	}
-
-	// brings corner from bottom left corner to top left corner
-	// ALGO: L D L' D'
-	void algo_LDLpDp() {
-		rotateColumnDown(0); // L
-		rotateSliceCCW(CUBE_SIZE - 1); // D
-		rotateColumnUp(0); // L'
-		rotateSliceCW(CUBE_SIZE - 1); // D'
-	}
-
 	// perform algorithms
 	// Example: F U' R U
 	void performAlgorithm(const std::string& s) {
@@ -1415,7 +1373,6 @@ public:
 		return true;
 	}
 
-
 /*
 FIXME: sometimes this happens:
 
@@ -1439,7 +1396,7 @@ Notice all FRONT edge pieces belong to B and RY and RW are in the second later, 
 */
 
 	bool solve3x3SecondLayer() {
-		int timeout = 10;
+		int timeout = 20;
 		if (face[FRONT]->isSolved()) {
 			rotateCubeLeft2();
 		}
@@ -1451,9 +1408,9 @@ Notice all FRONT edge pieces belong to B and RY and RW are in the second later, 
 			for (int s = 4; s--;) {
 				Cubelet::color_t downTopEdgeColor = face[DOWN]->cface[0][CENTER].color;
 				Cubelet::color_t downColor = face[DOWN]->faceColor();
+				Cubelet::color_t rightColor = face[RIGHT]->faceColor();
 
 				if (downColor == downTopEdgeColor) {
-					Cubelet::color_t rightColor = face[RIGHT]->faceColor();
 					Cubelet::color_t frontBottomEdgeColor = face[FRONT]->cface[CUBE_SIZE - 1][CENTER].color;
 					if (rightColor == frontBottomEdgeColor) {
 						if (m_con) *m_con << "match to right edge\n";
@@ -1467,6 +1424,24 @@ Notice all FRONT edge pieces belong to B and RY and RW are in the second later, 
 						break;
 					}
 				}
+				// check if edge on left needs to move to right
+				Cubelet::color_t downLeftEdgeColor = face[DOWN]->cface[CENTER][0].color;
+				Cubelet::color_t leftBottomEdgeColor = face[LEFT]->cface[CUBE_SIZE - 1][CENTER].color;
+				if ((downLeftEdgeColor == downColor) && (leftBottomEdgeColor == rightColor)) {
+					//move 
+					performAlgorithm("U R U' R' U' F' U F");
+					rotateCubeSpinCW();
+					performAlgorithm("L' U L U F U' F'");
+					break;
+				}
+				// check flip case also
+				if ((downLeftEdgeColor == rightColor) && (leftBottomEdgeColor == downColor)) {
+					//move 
+					performAlgorithm("U' L' U L U F U' F'");
+					performAlgorithm("U' R U' R' U' F' U F");
+					break;
+				}
+
 				// rotate the top
 				performAlgorithm("U");
 			}
