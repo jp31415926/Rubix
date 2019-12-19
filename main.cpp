@@ -17,17 +17,19 @@ int main() {
 
 	//cube.printPos(std::cout);
 
-	for (int pass = 12; pass < 1000; ++pass) {
+	for (int pass = 19; pass < 1000; ++pass) {
 		Cube cube;
 		std::cout << "Pass " << pass << "\n";
 		cube.scramble(pass, true);
 
-		cube.setcon(&std::cout);
-		cube.print(std::cout);
+		if (pass >= 19) {
+			cube.setcon(&std::cout);
+			cube.print(std::cout);
+		}
 		bool result = cube.solve3x3();
 		if (!result || !cube.isSolved()) {
 			std::cout << "Pass " << pass << " FAILED!\n";
-			cube.print(std::cout);
+			//cube.print(std::cout);
 			break;
 		}
 	}

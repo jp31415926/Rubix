@@ -45,9 +45,6 @@
     <IncludePath>../;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
   </PropertyGroup>
   <ItemGroup>
-    <ClInclude Include="..\Cube.h" />
-    <ClInclude Include="..\Cubelet.h" />
-    <ClInclude Include="..\Face.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
