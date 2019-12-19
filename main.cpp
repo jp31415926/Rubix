@@ -16,12 +16,12 @@ int main() {
 
 	//cube.printPos(std::cout);
 
-	for (int pass = 19; pass < 1000; ++pass) {
+	for (int pass = 5; pass < 1000; ++pass) {
 		Cube cube(3);
 		std::cout << "Pass " << pass << "\n";
 		cube.scramble(pass, true);
 
-		if (pass >= 19) {
+		if (pass >= 5) {
 			cube.setcon(&std::cout);
 			cube.print(std::cout);
 		}

@@ -87,7 +87,6 @@ Cube::Cube(unsigned size)
 		CENTER = CUBE_SIZE / 2;
 		m_con = 0;
 
-		//std::srand((unsigned)std::time(nullptr));
 		for (int i = 6; i--;) {
 			Face* f = new Face(CUBE_SIZE);
 			f->initColor(i + 1);
@@ -590,6 +589,10 @@ Cube::Cube(unsigned size)
 	void Cube::scramble(int iterations, bool limitTo3x3) {
 		if (m_con)* m_con << "Cube::" << __FUNCTION__ << " STARTED\n";
 		int layer;
+
+		//std::srand((unsigned)std::time(nullptr));
+		std::srand(0);
+
 		for (int x = iterations; x--;) {
 			switch (std::rand() % 20) {
 			case 0:
@@ -1346,46 +1349,35 @@ Cube::Cube(unsigned size)
 			Cubelet::color_t backBottomLeftCornerColor;
 			int rot = face[FRONT]->faceRotation();
 
-			if (m_con)* m_con << "Looking for " << frontColor << downColor << rightColor << " corner\n";
+			if (m_con)* m_con << "Looking for match to " << frontColor << downColor << rightColor << " corner\n";
 
-			// look at the other 3 top corners
-			for (int s = 4; s--;) {
-				rotateSliceCW(0); // U
-
-				frontBottomRightCornerColor = face[FRONT]->getBottomRightColor();
-				downTopRightCornerColor = face[DOWN]->getTopRightColor();
-				rightBottomLeftCornerColor = face[RIGHT]->getBottomLeftColor();
-
-				if ((frontColor == frontBottomRightCornerColor) &&
-					(downColor == downTopRightCornerColor) &&
-					(rightColor == rightBottomLeftCornerColor)) {
-					performAlgorithm("R' D' R D");
-					restoreFrontRotation(rot);
-					performAlgorithm("L D L' D'");
-					break;
-				}
-			}
-			restoreFrontRotation(rot);
-
+			// look at the top 4 corners
 			for (int s = 4; s--;) {
 				frontBottomRightCornerColor = face[FRONT]->getBottomRightColor();
 				downTopRightCornerColor = face[DOWN]->getTopRightColor();
 				rightBottomLeftCornerColor = face[RIGHT]->getBottomLeftColor();
 
-				// corner solved?
+				if (m_con)* m_con << "  checking " << frontBottomRightCornerColor << downTopRightCornerColor << rightBottomLeftCornerColor << "\n";
 				if ((frontColor == frontBottomRightCornerColor) &&
 					(downColor == downTopRightCornerColor) &&
 					(rightColor == rightBottomLeftCornerColor)) {
+					if (s != 3) {
+						performAlgorithm("R' D' R D");
+						restoreFrontRotation(rot);
+						rotateCubeSpinCW();
+						performAlgorithm("L D L' D'");
+					}
 					break;
 				}
-
 				if (m_con)* m_con << "  checking " << downTopRightCornerColor << rightBottomLeftCornerColor << frontBottomRightCornerColor << "\n";
 				// check if correct corner, but wrong rotation, rotate
 				if ((frontColor == downTopRightCornerColor) &&
 					(downColor == rightBottomLeftCornerColor) &&
 					(rightColor == frontBottomRightCornerColor)) {
+					rotateCubeSpinCW();
 					performAlgorithm("L D L' D'");
 					performAlgorithm("L D L' D'");
+					rotateCubeSpinCCW();
 					break;
 				}
 
@@ -1398,13 +1390,21 @@ Cube::Cube(unsigned size)
 					break;
 				}
 
+				performAlgorithm("U");
+			}
+			restoreFrontRotation(rot);
+
+			// look at the bottom 4 corners
+			for (int s = 4; s--;) {
+				frontBottomRightCornerColor = face[FRONT]->getBottomRightColor();
+				downTopRightCornerColor = face[DOWN]->getTopRightColor();
+				rightBottomLeftCornerColor = face[RIGHT]->getBottomLeftColor();
+
 				downBottomRightCornerColor = face[DOWN]->getBottomRightColor();
 				rightBottomRightCornerColor = face[RIGHT]->getBottomRightColor();
 				backBottomLeftCornerColor = face[BACK]->getBottomLeftColor();
 
 				if (m_con)* m_con << "  checking " << downBottomRightCornerColor << backBottomLeftCornerColor << rightBottomRightCornerColor << "\n";
-				if (m_con)* m_con << "  checking " << rightBottomRightCornerColor << downBottomRightCornerColor << backBottomLeftCornerColor << "\n";
-				if (m_con)* m_con << "  checking " << backBottomLeftCornerColor << rightBottomRightCornerColor << downBottomRightCornerColor << "\n";
 
 				// check down bottom right corner
 				if ((frontColor == downBottomRightCornerColor) &&
@@ -1415,12 +1415,14 @@ Cube::Cube(unsigned size)
 					rotateCubeSpinCCW();
 					break;
 				}
+				if (m_con)* m_con << "  checking " << rightBottomRightCornerColor << downBottomRightCornerColor << backBottomLeftCornerColor << "\n";
 				if ((frontColor == rightBottomRightCornerColor) &&
 					(downColor == downBottomRightCornerColor) &&
 					(rightColor == backBottomLeftCornerColor)) {
 					performAlgorithm("R' D' R D");
 					break;
 				}
+				if (m_con)* m_con << "  checking " << backBottomLeftCornerColor << rightBottomRightCornerColor << downBottomRightCornerColor << "\n";
 				if ((frontColor == backBottomLeftCornerColor) &&
 					(downColor == rightBottomRightCornerColor) &&
 					(rightColor == downBottomRightCornerColor)) {
@@ -1429,7 +1431,7 @@ Cube::Cube(unsigned size)
 					performAlgorithm("R' D' R D");
 					break;
 				}
-				rotateSliceCCW(CUBE_SIZE - 1); // D
+				rotateSliceCW(CUBE_SIZE - 1); // D
 			}
 			rotateCubeSpinCW();
 		}
