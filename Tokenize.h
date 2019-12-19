@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-std::vector<std::string> tokenize(const std::string& str, const std::string& delimiters=" \t\n\r") {
+static std::vector<std::string> tokenize(const std::string& str, const std::string& delimiters=" \t\n\r") {
   std::vector<std::string> token_v;
   size_t start(str.find_first_not_of(delimiters)), end(start);
 

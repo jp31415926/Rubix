@@ -1,5 +1,4 @@
 #include <iostream>
-#include "Face.h"
 #include "Cube.h"
 
 int main() {
@@ -18,7 +17,7 @@ int main() {
 	//cube.printPos(std::cout);
 
 	for (int pass = 19; pass < 1000; ++pass) {
-		Cube cube;
+		Cube cube(3);
 		std::cout << "Pass " << pass << "\n";
 		cube.scramble(pass, true);
 
@@ -88,14 +87,5 @@ int test(Cube& cube) {
 	cube.rotateCubeSpinCW();
 	cube.rotateColumnUp(0);
 	return 0;
-
-	cube.rotateColumnTwice(0); // L2
-	cube.rotateColumnTwice(CUBE_SIZE - 1); // R2
-	cube.rotateRowTwice(0); // U2
-	cube.rotateRowTwice(CUBE_SIZE - 1); // D2
-	cube.rotateSliceTwice(0); // F2
-	cube.rotateSliceTwice(CUBE_SIZE - 1); // B2
-	return 0;
-
 
 }
