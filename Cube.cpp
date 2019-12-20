@@ -1290,7 +1290,7 @@ bool Cube::solve3x3FirstLayerCross() {
 			if (m_con) *m_con << "  checking " << frontBottomEdgeColor << downTopEdgeColor << " already solved\n";
 			// is this edge peice solved?
 			if ((frontBottomEdgeColor == frontColor) && (downTopEdgeColor == downColor)) {
-				if (face[DOWN]->faceColor() != downColor) {
+				if (rot != face[FRONT]->faceRotation()) {
 					// move down, rotate, them move back
 					performAlgorithm("F'");
 					restoreFrontRotation(rot);
@@ -1555,6 +1555,7 @@ bool Cube::isSecondLayerSolved() {
 
 bool Cube::solve3x3SecondLayer() {
 	int timeout = 20;
+	bool found = false;
 	if (face[FRONT]->isSolved()) {
 		rotateCubeLeft2();
 	}
@@ -1562,75 +1563,115 @@ bool Cube::solve3x3SecondLayer() {
 		if (m_con)*m_con << "FRONT is not solved!!!\n";
 		return false; // this should not happen if the last step worked
 	}
-	while (!isSecondLayerSolved() && --timeout) {
-		for (int s = 4; s--;) {
-			Cubelet::color_t downTopEdgeColor = face[DOWN]->getTopMiddleColor();
-			Cubelet::color_t downColor = face[DOWN]->faceColor();
-			Cubelet::color_t rightColor = face[RIGHT]->faceColor();
-			Cubelet::color_t leftColor = face[LEFT]->faceColor();
+	Cubelet::color_t frontColor = face[FRONT]->faceColor();
 
+	while (!isSecondLayerSolved() && --timeout) {
+		found = false;
+		Cubelet::color_t downColor = face[DOWN]->faceColor();
+		Cubelet::color_t rightColor = face[RIGHT]->faceColor();
+		Cubelet::color_t leftColor = face[LEFT]->faceColor();
+
+		Cubelet::color_t downLeftEdgeColor = face[DOWN]->getMiddleLeftColor();
+		Cubelet::color_t leftBottomEdgeColor = face[LEFT]->getBottomMiddleColor();
+
+		for (int s = 4; s--;) {
+			Cubelet::color_t frontBottomEdgeColor = face[FRONT]->getBottomMiddleColor();
+			Cubelet::color_t downTopEdgeColor = face[DOWN]->getTopMiddleColor();
 			if (downColor == downTopEdgeColor) {
-				Cubelet::color_t frontBottomEdgeColor = face[FRONT]->getBottomMiddleColor();
 				if (rightColor == frontBottomEdgeColor) {
 					if (m_con)*m_con << "match to right edge\n";
 					performAlgorithm("U R U' R' U' F' U F");
+					found = true;
 					break;
 				}
 				if (leftColor == frontBottomEdgeColor) {
 					if (m_con)*m_con << "match to left edge\n";
 					performAlgorithm("U' L' U L U F U' F'");
+					found = true;
 					break;
 				}
 			}
-			// check if edge on left needs to flip
-			Cubelet::color_t downLeftEdgeColor = face[DOWN]->getMiddleLeftColor();
-			Cubelet::color_t leftBottomEdgeColor = face[LEFT]->getBottomMiddleColor();
-			if ((downLeftEdgeColor == leftColor) && (leftBottomEdgeColor == downColor)) {
-				if (m_con)*m_con << "left edge flip\n";
-				performAlgorithm("U' L' U L U F U' F'");
-				performAlgorithm("U2");
-				performAlgorithm("U' L' U L U F U' F'");
-				break;
+			if (downColor == frontBottomEdgeColor) {
+				if (rightColor == downTopEdgeColor) {
+					if (m_con)*m_con << "match to right edge with flip\n";
+					rotateCubeSpinCW();
+					performAlgorithm("U'");
+					performAlgorithm("U' L' U L U F U' F'");
+					found = true;
+					break;
+				}
+				if (leftColor == downTopEdgeColor) {
+					if (m_con)*m_con << "match to left edge with flip\n";
+					rotateCubeSpinCCW();
+					performAlgorithm("U");
+					performAlgorithm("U R U' R' U' F' U F");
+					found = true;
+					break;
+				}
 			}
-			// check if edge on left needs to move to right
-			if ((downLeftEdgeColor == downColor) && (leftBottomEdgeColor == rightColor)) {
-				if (m_con)*m_con << "left edge move to right edge\n";
-				performAlgorithm("U' L' U L U F U' F'");
-				performAlgorithm("U");
-				rotateCubeSpinCW();
-				performAlgorithm("U' L' U L U F U' F'");
-				break;
-			}
-			// check flip case also
-			if ((downLeftEdgeColor == rightColor) && (leftBottomEdgeColor == downColor)) {
-				if (m_con)*m_con << "right edge move to left edge\n";
-				performAlgorithm("U' L' U L U F U' F'");
-				performAlgorithm("U2");
-				performAlgorithm("U R U' R' U' F' U F");
-				break;
-			}
-			// check if left edge needs to move to the top-right edge
-			Cubelet::color_t upColor = face[UP]->faceColor();
-			if ((downLeftEdgeColor == rightColor) && (leftBottomEdgeColor == upColor)) {
-				if (m_con)*m_con << "left edge needs to move to the top-right edge\n";
-				performAlgorithm("U' L' U L U F U' F'");
-				rotateCubeSpinCW();
-				rotateCubeSpinCW();
-				performAlgorithm("U' L' U L U F U' F'");
-				break;
-			}
-			// check flip case
-			if ((downLeftEdgeColor == upColor) && (leftBottomEdgeColor == rightColor)) {
-				if (m_con)*m_con << "left edge needs to move to the top-right edge flipped\n";
-				performAlgorithm("U' L' U L U F U' F'");
-				rotateCubeSpinCW();
-				performAlgorithm("U");
-				performAlgorithm("U R U' R' U' F' U F");
-				break;
-			}
-
 			// rotate the top
 			performAlgorithm("U");
+		}
+		if (!found) {
+			//for (int s = 4; s--;) {
+			{
+				// if left edge is not solved, bring it up
+				if ((downLeftEdgeColor != downColor) || (leftBottomEdgeColor != leftColor)) {
+					if (m_con)*m_con << "left edge needs to come up\n";
+					performAlgorithm("U' L' U L U F U' F'");
+				}
+				//rotateCubeSpinCW();
+
+			//	// check if edge on left needs to flip
+			//	Cubelet::color_t downLeftEdgeColor = face[DOWN]->getMiddleLeftColor();
+			//	Cubelet::color_t leftBottomEdgeColor = face[LEFT]->getBottomMiddleColor();
+			//	if ((downLeftEdgeColor == leftColor) && (leftBottomEdgeColor == downColor)) {
+			//		if (m_con)*m_con << "left edge flip\n";
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		performAlgorithm("U2");
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		break;
+			//	}
+			//	// check if edge on left needs to move to right
+			//	if ((downLeftEdgeColor == downColor) && (leftBottomEdgeColor == rightColor)) {
+			//		if (m_con)*m_con << "left edge move to right edge\n";
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		performAlgorithm("U");
+			//		rotateCubeSpinCW();
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		break;
+			//	}
+			//	// check if edge on left needs to move to right with a flip
+			//	if ((downLeftEdgeColor == rightColor) && (leftBottomEdgeColor == downColor)) {
+			//		if (m_con)*m_con << "left edge move to right edge with a flip\n";
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		performAlgorithm("U2");
+			//		performAlgorithm("U R U' R' U' F' U F");
+			//		break;
+			//	}
+			//	// check if left edge needs to move to the top-right edge
+			//	Cubelet::color_t upColor = face[UP]->faceColor();
+			//	if ((downLeftEdgeColor == rightColor) && (leftBottomEdgeColor == upColor)) {
+			//		if (m_con)*m_con << "left edge needs to move to the top-right edge\n";
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		rotateCubeSpinCW();
+			//		rotateCubeSpinCW();
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		break;
+			//	}
+			//	// check flip case
+			//	if ((downLeftEdgeColor == upColor) && (leftBottomEdgeColor == rightColor)) {
+			//		if (m_con)*m_con << "left edge needs to move to the top-right edge flipped\n";
+			//		performAlgorithm("U' L' U L U F U' F'");
+			//		rotateCubeSpinCW();
+			//		performAlgorithm("U");
+			//		performAlgorithm("U R U' R' U' F' U F");
+			//		break;
+			//	}
+
+				// rotate the top
+				//performAlgorithm("U");
+			}
 		}
 		// rotate the cube
 		rotateCubeSpinCW();
@@ -1777,41 +1818,41 @@ bool Cube::solve3x3LastLayerEdgePermutation() {
 // This solves any size cube like a 3x3. It assumes all the centers and edges are complete for cubes greater than 3x3.
 bool Cube::solve3x3() {
 	bool result;
-	std::cout << "  solve3x3FirstLayerCross\n";
+	//std::cout << "  solve3x3FirstLayerCross\n";
 	result = solve3x3FirstLayerCross();
 	if (!result) {
 		std::cout << "solve3x3FirstLayerCross() FAILED!\n";
 		print(std::cout);
 		return false;
 	}
-	std::cout << "  solve3x3FirstLayerCorners\n";
+	//std::cout << "  solve3x3FirstLayerCorners\n";
 	result = solve3x3FirstLayerCorners();
 	if (!result) {
 		std::cout << "solve3x3FirstLayerCorners() FAILED!\n";
 		print(std::cout);
 		return false;
 	}
-	std::cout << "  solve3x3SecondLayer\n";
+	//std::cout << "  solve3x3SecondLayer\n";
 	result = solve3x3SecondLayer();
 	if (!result) {
 		std::cout << "solve3x3SecondLayer() FAILED!\n";
 		print(std::cout);
 		return false;
 	}
-	std::cout << "  solve3x3LastLayerCross\n";
+	//std::cout << "  solve3x3LastLayerCross\n";
 	solve3x3LastLayerCross();
-	std::cout << "  solve3x3LastLayerCornerOrientation\n";
+	//std::cout << "  solve3x3LastLayerCornerOrientation\n";
 	solve3x3LastLayerCornerOrientation();
-	std::cout << "  solve3x3LastLayerCornerPermutation\n";
+	//std::cout << "  solve3x3LastLayerCornerPermutation\n";
 	solve3x3LastLayerCornerPermutation();
-	std::cout << "  solve3x3LastLayerEdgePermutation\n";
+	//std::cout << "  solve3x3LastLayerEdgePermutation\n";
 	result = solve3x3LastLayerEdgePermutation();
 	if (!result) {
 		std::cout << "solve3x3LastLayerEdgePermutation() FAILED!\n";
 		print(std::cout);
 		return false;
 	}
-	std::cout << "\n";
+	//std::cout << "\n";
 
 	return true;
 }

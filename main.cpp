@@ -16,15 +16,15 @@ int main() {
 
 	//cube.printPos(std::cout);
 
-	for (int pass = 91; pass < 1000; ++pass) {
+	for (int pass = 1; pass < 10000; ++pass) {
 		Cube cube(3);
 		std::cout << "Pass " << pass << "\n";
 		cube.scramble(pass, true);
 
-		if (pass >= 91) {
-			cube.setcon(&std::cout);
-			cube.print(std::cout);
-		}
+		//if (pass >= 2) {
+		//	cube.setcon(&std::cout);
+		//	cube.print(std::cout);
+		//}
 		bool result = cube.solve3x3();
 		if (!result || !cube.isSolved()) {
 			std::cout << "Pass " << pass << " FAILED!\n";
