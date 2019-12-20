@@ -49,7 +49,7 @@ public:
 		return cface[CENTER][MAX].color;
 	}
 
-	Cubelet::color_t getMiddleBottomColor() const {
+	Cubelet::color_t getBottomMiddleColor() const {
 		return cface[MAX][CENTER].color;
 	}
 

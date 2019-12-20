@@ -210,8 +210,12 @@ public:
 	// z - rotate the entire cube on F
 	void performAlgorithm(const std::string& s);
 
+	bool isFrontCrossSolved();
+
 	// Solve the 2st later cross on FRONT layer
 	bool solve3x3FirstLayerCross();
+
+	bool isFirstLayerSolved();
 
 	bool solve3x3FirstLayerCorners();
 
@@ -227,7 +231,7 @@ public:
 
 	void solve3x3LastLayerCornerPermutation();
 
-	void solve3x3LastLayerEdgePermutation();
+	bool solve3x3LastLayerEdgePermutation();
 
 	// This solves any size cube like a 3x3. It assumes all the centers and edges are complete for cubes greater than 3x3.
 	bool solve3x3();
