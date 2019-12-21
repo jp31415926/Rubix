@@ -1,26 +1,13 @@
 #include <iostream>
 #include "Cube.h"
 
-int main() {
-	//Cube cube;
-
-	//cube.printPos(std::cout);
-	//cube.setcon(&std::cout);
-	//cube.rotateCubeRight();
-	//cube.printPos(std::cout);
-
-	//cube.scramble(11, true);
-	//cube.setcon(&std::cout);
-	//cube.solve3x3();
-	//return 0;
-
-	//cube.printPos(std::cout);
-
-	for (int pass = 1; pass < 10000; ++pass) {
-		Cube cube(3);
+bool test3x3() {
+	for (int pass = 1; pass <= 10000; ++pass) {
+		Cube cube(7);
 		std::cout << "Pass " << pass << "\n";
 		cube.scramble(pass, true);
 
+		// turn on debug output after we reach a pass that needs a closer look.
 		//if (pass >= 2) {
 		//	cube.setcon(&std::cout);
 		//	cube.print(std::cout);
@@ -28,7 +15,27 @@ int main() {
 		bool result = cube.solve3x3();
 		if (!result || !cube.isSolved()) {
 			std::cout << "Pass " << pass << " FAILED!\n";
-			//cube.print(std::cout);
+			break;
+		}
+	}
+
+	return 0;
+}
+
+int main() {
+	for (int pass = 100; pass <= 1000; ++pass) {
+		Cube cube(7);
+		std::cout << "Pass " << pass << "\n";
+		cube.scramble(pass);
+
+		// turn on debug output after we reach a pass that needs a closer look.
+		if (pass >= 1) {
+			cube.setcon(&std::cout);
+			cube.print(std::cout);
+		}
+		bool result = cube.solveFaceCenters();
+		if (!result || !cube.isSolved()) {
+			std::cout << "Pass " << pass << " FAILED!\n";
 			break;
 		}
 	}

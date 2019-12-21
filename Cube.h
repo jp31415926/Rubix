@@ -159,20 +159,22 @@ public:
 	bool rotateUnsolvedAdjacentToPos(Cubelet::color_t excludeColor, int pos);
 
 	// returns number of unsolved centers
-	int countUnsolvedCenters();
+	unsigned countUnsolvedCenters();
 
 	// Assumptions: front face as already been searched for a matching part 1
 	// move cubelet(s) to form part 1 of center
 	// this part is always center column, but can be many rows (from center to bottom edge, not inclusive)
 	// 43-53 cubelets on a 7x7
-	void solveFaceCenterPart1();
+	bool solveFaceCenterPart1();
 
-	void solveFaceCenterPart2();
+	bool solveFaceCenterPart2();
 
-	void solveFaceCenterPart3();
+	bool solveFaceCenterPart3();
+
+	bool solveFinal2Centers();
 
 
-	void solveFaceCenterPart4();
+	//bool solveFaceCenterPart4();
 
 	// 00 01 02 03 04 05 06
 	// 10 11 12 13 14 15 16
@@ -190,10 +192,10 @@ public:
 
 	// move cubelet(s) to form part 1 of center
 	// this part is always 1 column, but can be many rows (from center to edge, not inclusive)
-	void solveCurrentFaceCenter();
+	bool solveFaceCenter();
 
 	// solve the front face center
-	void solveFaceCenters();
+	bool solveFaceCenters();
 
 	// perform algorithms
 	// Example: F U' R U

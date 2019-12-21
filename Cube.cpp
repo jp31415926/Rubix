@@ -542,22 +542,22 @@ void Cube::rotateFaceCW(int side) {
 	if (m_con)*m_con << "Cube::" << __FUNCTION__ << "(" << side << ")\n";
 	switch (side) {
 	case FRONT:
-		rotateSliceCW(0);
+		rotateSliceCW(0); // U
 		break;
 	case BACK:
-		rotateSliceCW(CUBE_SIZE - 1);
+		rotateSliceCW(CUBE_SIZE - 1); // D'
 		break;
 	case UP:
-		rotateRowLeft(0);
+		rotateRowLeft(0); // B
 		break;
 	case DOWN:
-		rotateRowRight(CUBE_SIZE - 1);
+		rotateRowRight(CUBE_SIZE - 1); // F'
 		break;
 	case LEFT:
-		rotateColumnDown(0);
+		rotateColumnDown(0); // L
 		break;
 	case RIGHT:
-		rotateColumnUp(CUBE_SIZE - 1);
+		rotateColumnUp(CUBE_SIZE - 1); // R
 		break;
 	}
 }
@@ -579,15 +579,15 @@ void Cube::restoreFrontRotation(int rot) {
 		break;
 	case 1:
 	case -3:
-		rotateSliceCW(0);
+		rotateSliceCW(0); // U
 		break;
 	case 2:
 	case -2:
-		rotateSliceTwice(0);
+		rotateSliceTwice(0); // U2
 		break;
 	case 3:
 	case -1:
-		rotateSliceCCW(0);
+		rotateSliceCCW(0); // U'
 		break;
 	}
 }
@@ -677,7 +677,7 @@ bool Cube::isSolved() const {
 // returns -1 if none are found
 int Cube::findUnsolvedCenter() {
 	for (int f = 6; f--;) {
-		if (!face[f]->isSolved()) {
+		if (!face[f]->isCenterSolved()) {
 			return f;
 		}
 	}
@@ -699,17 +699,17 @@ int Cube::findUnsolvedCenterExcludingPosAndFront(int pos) {
 // returns true if successful, or false if not
 bool Cube::rotateUnsolvedAdjacentToPos(Cubelet::color_t excludeColor, int pos) {
 	for (int i = 4; i--;) {
-		if ((face[pos]->faceColor() != excludeColor) && !face[pos]->isSolved()) {
+		if ((face[pos]->faceColor() != excludeColor) && !face[pos]->isCenterSolved()) {
 			return true;
 		}
 		rotateCubeSpinCW();
-		rotateSliceCCW(0);
+		rotateSliceCCW(0); // U'
 	}
 	return false;
 }
 
 // returns number of unsolved centers
-int Cube::countUnsolvedCenters() {
+unsigned Cube::countUnsolvedCenters() {
 	int count = 0;
 	for (int f = 6; f--;) {
 		if (!face[f]->isSolved()) {
@@ -719,31 +719,43 @@ int Cube::countUnsolvedCenters() {
 	return count;
 }
 
-// Assumptions: front face as already been searched for a matching part 1
-// move cubelet(s) to form part 1 of center
-// this part is always center column, but can be many rows (from center to bottom edge, not inclusive)
-// 43-53 cubelets on a 7x7
-void Cube::solveFaceCenterPart1() {
-	int start = CENTER + 1;
-	int end = CUBE_SIZE - 2;
-	Cubelet::color_t color = face[FRONT]->faceColor();
-	int rotation = face[FRONT]->faceRotation();
+// 00 01 02 03 04 05 06
+// 10 11 12 13 14 15 16
+// 20 21 22 23 24 25 26
+// 30 31 32 33 34 35 36
+// 40 41 42 43 44 45 46
+// 50 51 52 53 54 55 56
+// 60 61 62 63 64 65 66
 
-	for (int row = start; row <= end; ++row) {
+
+// move cubelet(s) to form part 1 of center
+// this part is always center column, but can be many rows (from top to bottom edge, not inclusive)
+// 41-53 cubelets on a 7x7
+bool Cube::solveFaceCenterPart1() {
+	int timeout = 20;
+	unsigned start = 1;
+	unsigned end = CUBE_SIZE - 2;
+	Cubelet::color_t color = face[FRONT]->faceColor();
+	unsigned rotation = face[FRONT]->faceRotation();
+
+	for (unsigned row = start; row <= end; ++row) {
+		if (timeout-- == 0) break;
 		// is cubelet the color we want?
-		if (face[FRONT]->getC(row, CENTER).color != color) {
+		if (face[FRONT]->getColor(row, CENTER) != color) {
 			// find a cubelet the correct color and in the correct position and move it to here
 			// search all the faces
 			bool found = false;
 			// for (int f = 6; f--;)
-			for (int f = 0; f < 6; ++f) {
+			for (unsigned f = 0; f < 6; ++f) {
 				// rotate each face up to 4 times
-				for (int s = 4; s--;) {
-					if (face[f]->getC(row, CENTER).color != color) {
+				for (unsigned s = 4; s--;) {
+					if ((face[f]->getColor(row, CENTER) != color)
+						// special case where we find parts of the column we have already built
+					|| ((row > CENTER) && (f == FRONT) && (s == 1))) {
 						rotateFaceCW(f);
 						// turn to that face, rotate the face, then move back.
 						//rotateCubeToFront(f);
-						//rotateSliceCW(0);
+						//rotateSliceCW(0); // U
 						//rotateCubeToFrontByColor(color);
 					}
 					else {
@@ -762,37 +774,37 @@ void Cube::solveFaceCenterPart1() {
 							}
 							break;
 						case BACK:
-							rotateSliceCCW(0);
-							rotateSliceCW(CUBE_SIZE - 1);
+							rotateSliceCCW(0); // U'
+							rotateSliceCW(CUBE_SIZE - 1); // D'
 							rotateColumnTwice(row);
-							rotateSliceCW(0);
+							rotateSliceCW(0); // U
 							rotateColumnTwice(row);
 							break;
 						case UP:
-							rotateSliceCCW(0);
-							rotateRowRight(0);
+							rotateSliceCCW(0); // U'
+							rotateRowRight(0); // B' // B'
 							rotateColumnDown(row);
-							rotateSliceCW(0);
+							rotateSliceCW(0); // U
 							rotateColumnUp(row);
 							break;
 						case DOWN:
-							rotateSliceCCW(0);
-							rotateRowLeft(0);
+							rotateSliceCCW(0); // U'
+							rotateRowLeft(0); // B
 							rotateColumnUp(row);
-							rotateSliceCW(0);
+							rotateSliceCW(0); // U
 							rotateColumnDown(row);
 							break;
 						case LEFT:
 							rotateRowRight(row);
-							rotateSliceCCW(0);
+							rotateSliceCCW(0); // U'
 							rotateRowLeft(row);
-							rotateSliceCW(0);
+							rotateSliceCW(0); // U
 							break;
 						case RIGHT:
 							rotateRowLeft(row);
-							rotateSliceCCW(0);
+							rotateSliceCCW(0); // U'
 							rotateRowRight(row);
-							rotateSliceCW(0);
+							rotateSliceCW(0); // U
 							break;
 						}
 						break;
@@ -802,17 +814,31 @@ void Cube::solveFaceCenterPart1() {
 			}
 		}
 	}
+
+	return timeout != 0;
 }
 
-void Cube::solveFaceCenterPart2() {
-	int start = CENTER;
-	int end = CUBE_SIZE - 2;
+bool Cube::solveFaceCenterPart2() {
+	int timeout = 20;
+	unsigned start = 1;
+	unsigned end = CUBE_SIZE - 2;
+	unsigned col;
+	unsigned coll = CENTER - 1;
+	unsigned colr = CENTER + 1;
 	Cubelet::color_t origColor = face[FRONT]->faceColor();
-	int origRotation = face[FRONT]->faceRotation();
-	int	rotation = origRotation;
+	unsigned origRotation = face[FRONT]->faceRotation();
+	unsigned rotation = origRotation;
 
 	// for each column in part 2 & 3...
-	for (unsigned col = 1; col <= CUBE_SIZE - 2; ++col) {
+	for (unsigned colcount = 1; colcount <= CUBE_SIZE - 2; ++colcount) {
+		if ((colcount & 1) == 1) {
+			col = coll--;
+		}
+		else {
+			col = colr++;
+		}
+
+		if (timeout-- == 0) break;
 		// is the column already done?
 		if (!face[FRONT]->isRangeSolved(start, col, end, col)) {
 			// if not, build it one at a time
@@ -825,13 +851,13 @@ void Cube::solveFaceCenterPart2() {
 					break;
 				}
 			}
-			for (int row = start; row <= end; ++row) {
-				if (face[FRONT]->getC(row, col).color != origColor) {
+			for (unsigned row = start; row <= end; ++row) {
+				if (face[FRONT]->getColor(row, col) != origColor) {
 					// find a cubelet the correct color and in the correct position and move it to here
 					// search all the faces
 					bool found = false;
 					// for (int f = 6; f--;)
-					for (int f = 0; f < 6; ++f) {
+					for (unsigned f = 0; f < 6; ++f) {
 						// FIXME: for now, don't search for blocks on the face we are trying to solve.
 						// (need to make sure we don't take blocks from the parts that we have already solved.)
 						if (face[f]->faceColor() == origColor) {
@@ -839,12 +865,12 @@ void Cube::solveFaceCenterPart2() {
 						}
 						// rotate each face up to 4 times
 						for (int s = 4; s--;) {
-							if (face[f]->getC(row, col).color != origColor) {
+							if (face[f]->getColor(row, col) != origColor) {
 								rotateFaceCW(f);
 								// turn to that face, rotate the face, then move back.
 								//Cubelet::color_t saveColor = face[FRONT]->faceColor();
 								//rotateCubeToFront(f);
-								//rotateSliceCW(0);
+								//rotateSliceCW(0); // U
 								//rotateCubeToFrontByColor(saveColor);
 							}
 							else {
@@ -852,26 +878,34 @@ void Cube::solveFaceCenterPart2() {
 								found = true;
 								switch (f) {
 								case BACK:
-									if (row == CENTER) {
-										rotateColumnTwice(col);
-										rotateSliceCW(0);
-										rotateColumnTwice(col);
-										rotateSliceCCW(0);
-									}
-									else {
+									// I don't know what this part is for
+									//if (row == CENTER) {
+									//	rotateColumnTwice(col);
+									//	performAlgorithm("U");
+									//	//rotateSliceCW(0); // U
+									//	rotateColumnTwice(col);
+									//	performAlgorithm("U'");
+									//	//rotateSliceCCW(0); // U'
+									//}
+									//else {
+								  {
 										rotateRowTwice(row);
 										if (col > CENTER) {
-											rotateSliceCCW(0);
+											performAlgorithm("U'");
+											//rotateSliceCCW(0); // U'
 										}
 										else {
-											rotateSliceCW(0);
+											performAlgorithm("U");
+											//rotateSliceCW(0); // U
 										}
 										rotateRowTwice(row);
 										if (col > CENTER) {
-											rotateSliceCW(0);
+											performAlgorithm("U");
+											//rotateSliceCW(0); // U
 										}
 										else {
-											rotateSliceCCW(0);
+											performAlgorithm("U'");
+											//rotateSliceCCW(0); // U'
 										}
 									}
 									break;
@@ -879,36 +913,39 @@ void Cube::solveFaceCenterPart2() {
 								case DOWN:
 									// spin and then do left
 									rotateCubeSpinCW();
-									rotateSliceCCW(0);
+									performAlgorithm("U'");
+									//rotateSliceCCW(0); // U'
 									rotateColumnUp(0);
 									// YES, I want to drop down to LEFT
 								case LEFT:
 									if (row == CENTER) {
-										rotateSliceCW(0);
-										rotateColumnDown(0);
+										performAlgorithm("U L");
+										//rotateSliceCW(0); // U
+										//rotateColumnDown(0); // L
 										rotateRowRight(col);
-										rotateSliceCCW(0);
+										performAlgorithm("U'");
+										//rotateSliceCCW(0); // U'
 										rotateRowLeft(col);
 									}
 									else {
 										rotateRowRight(row);
 										if (col > CENTER) {
-											rotateSliceCCW(0);
+											performAlgorithm("U'");
 										}
 										else {
-											rotateSliceCW(0);
+											performAlgorithm("U");
 										}
 										rotateRowLeft(row);
 										if (col > CENTER) {
-											rotateSliceCW(0);
+											performAlgorithm("U");
 										}
 										else {
-											rotateSliceCCW(0);
+											performAlgorithm("U'");
 										}
 									}
 									break;
 								case FRONT:
-									if (row == CENTER) {
+									if (row == start) {
 										// if first block, we don't care about the state of all the other blocks
 										// coincidentially, the center block MUST be moved first
 										break;
@@ -926,10 +963,10 @@ void Cube::solveFaceCenterPart2() {
 										rotateColumnUp(col);
 										restoreFrontRotation(rotation);
 										//	if (col > CENTER) {
-										//		rotateSliceCW(0);
+										//		rotateSliceCW(0); // U
 										//	}
 										//	else {
-										//		rotateSliceCCW(0);
+										//		rotateSliceCCW(0); // U'
 										//	}
 										//	rotateColumnDown(col);
 										//}
@@ -943,36 +980,36 @@ void Cube::solveFaceCenterPart2() {
 								case UP:
 									// spin and then do right
 									rotateCubeSpinCW();
-									rotateSliceCCW(0);
-									rotateColumnDown(CUBE_SIZE - 1);
-									// YES, I want to drop down to RIGHT
+									performAlgorithm("U' R'");
+									//rotateColumnDown(CUBE_SIZE - 1); // R'
+								// YES, I want to drop down to RIGHT
 								case RIGHT:
-									if (row == CENTER) {
-										rotateSliceCW(0);
-										rotateColumnUp(CUBE_SIZE - 1);
+									if (row == start) {
+										performAlgorithm("U R");
+										//rotateColumnUp(CUBE_SIZE - 1); // R
 										rotateRowLeft(col);
-										rotateSliceCCW(0);
+										performAlgorithm("U'");
 										rotateRowRight(col);
 									}
 									else {
 										rotateRowLeft(row);
-										if (col > CENTER) {
-											rotateSliceCCW(0);
+										if (col < CENTER) {
+											performAlgorithm("U'");
 										}
 										else {
-											rotateSliceCW(0);
+											performAlgorithm("U");
 										}
 										rotateRowRight(row);
-										if (col > CENTER) {
-											rotateSliceCW(0);
+										if (col < CENTER) {
+											performAlgorithm("U");
 										}
 										else {
-											rotateSliceCCW(0);
+											performAlgorithm("U'");
 										}
 									}
 									break;
 								}
-								if (row == CENTER) {
+								if (row == start) {
 									rotation = face[FRONT]->faceRotation();
 								}
 								break;
@@ -991,52 +1028,62 @@ void Cube::solveFaceCenterPart2() {
 				// shouldn't happen
 				break;
 			case BACK:
-				rotateSliceTwice(0);
+				rotateSliceTwice(0); // U2
 				rotateColumnTwice(col);
-				rotateSliceTwice(0);
+				rotateSliceTwice(0); // U2
 				break;
 			case LEFT:
 				// spin and then do top
 				rotateCubeSpinCW();
-				rotateSliceCCW(0);
-				rotateRowRight(0);
+				performAlgorithm("U'");
+				//rotateSliceCCW(0); // U'
+				rotateRowRight(0); // B'
 				// YES, I want to drop down to UP
 			case UP:
 				rotateColumnDown(col);
 				if (col > CENTER) {
-					rotateSliceCW(0);
+					performAlgorithm("U");
+					//rotateSliceCW(0); // U
 				}
 				else {
-					rotateSliceCCW(0);
+					performAlgorithm("U'");
+					//rotateSliceCCW(0); // U'
 				}
 				rotateColumnUp(col);
 				if (col > CENTER) {
-					rotateSliceCCW(0);
+					performAlgorithm("U'");
+					//rotateSliceCCW(0); // U'
 				}
 				else {
-					rotateSliceCW(0);
+					performAlgorithm("U");
+					//rotateSliceCW(0); // U
 				}
 				break;
 			case RIGHT:
 				// spin and then do bottom
 				rotateCubeSpinCW();
-				rotateSliceCCW(0);
+				performAlgorithm("U'");
+				//rotateSliceCCW(0); // U'
 				rotateRowLeft(CUBE_SIZE - 1);
 				// YES, I want to drop down to DOWN
 			case DOWN:
 				rotateColumnUp(col);
 				if (col > CENTER) {
-					rotateSliceCW(0);
+					performAlgorithm("U");
+					//rotateSliceCW(0); // U
 				}
 				else {
-					rotateSliceCCW(0);
+					performAlgorithm("U'");
+					//rotateSliceCCW(0); // U'
 				}
 				rotateColumnDown(col);
 				if (col > CENTER) {
-					rotateSliceCCW(0);
+					performAlgorithm("U'");
+					//rotateSliceCCW(0); // U'
 				}
 				else {
-					rotateSliceCW(0);
+					performAlgorithm("U");
+					//rotateSliceCW(0); // U
 				}
 				break;
 			}
@@ -1044,23 +1091,17 @@ void Cube::solveFaceCenterPart2() {
 		}
 	}
 	//restoreFrontRotation(origRotation);
+	return timeout != 0;
 }
 
-void Cube::solveFaceCenterPart3() {
+bool Cube::solveFaceCenterPart3() {
+
+	return true;
 }
 
-
-void Cube::solveFaceCenterPart4() {
-
+bool Cube::solveFinal2Centers() {
+	return true;
 }
-
-// 00 01 02 03 04 05 06
-// 10 11 12 13 14 15 16
-// 20 21 22 23 24 25 26
-// 30 31 32 33 34 35 36
-// 40 41 42 43 44 45 46
-// 50 51 52 53 54 55 56
-// 60 61 62 63 64 65 66
 
 // center parts for 7x7 example:
 // part 1: 43-53
@@ -1070,19 +1111,42 @@ void Cube::solveFaceCenterPart4() {
 
 // move cubelet(s) to form part 1 of center
 // this part is always 1 column, but can be many rows (from center to edge, not inclusive)
-void Cube::solveCurrentFaceCenter() {
-	solveFaceCenterPart1();
+bool Cube::solveFaceCenter() {
+	bool result;
+	result = solveFaceCenterPart1();
+	if (!result) {
+		if (m_con)*m_con << "solveFaceCenterPart1() FAILED!\n";
+		if (m_con) print(*m_con);
+		return false;
+	}
+	
+	result = solveFaceCenterPart2();
+	if (!result) {
+		if (m_con)*m_con << "solveFaceCenterPart2() FAILED!\n";
+		if (m_con) print(*m_con);
+		return false;
+	}
+
+	result = solveFaceCenterPart3();
+	if (!result) {
+		if (m_con)*m_con << "solveFaceCenterPart3() FAILED!\n";
+		if (m_con) print(*m_con);
+		return false;
+	}
 
 	solveFaceCenterPart2();
 
 	//solveFaceCenterPart3();
 
-	solveFaceCenterPart4();
+	//solveFaceCenterPart4();
+
+	return true;
 }
 
 // solve the front face center
-void Cube::solveFaceCenters() {
-	while (true) {
+bool Cube::solveFaceCenters() {
+	bool result = false;
+	while (countUnsolvedCenters() > 2) {
 		// find an unsolved face center
 		int f = findUnsolvedCenter();
 
@@ -1095,9 +1159,16 @@ void Cube::solveFaceCenters() {
 		rotateCubeToFront(f);
 
 		// do steps to solve the center of current face
-		solveCurrentFaceCenter();
+		result = solveFaceCenter();
 		break;//debugging
 	}
+	if (result && (countUnsolvedCenters() == 2)) {
+		// find an unsolved face center
+		int f = findUnsolvedCenter();
+		result = solveFinal2Centers();
+	}
+
+	return result;
 }
 
 // perform algorithms
@@ -1363,7 +1434,7 @@ bool Cube::solve3x3FirstLayerCross() {
 
 				// not solved yet - rotate cube except FRONT
 				rotateCubeSpinCW();
-				rotateSliceCCW(0);
+				rotateSliceCCW(0); // U'
 			}
 		}
 
@@ -1371,7 +1442,7 @@ bool Cube::solve3x3FirstLayerCross() {
 			if (m_con)*m_con << "  solved!\n";
 			while (downColor != face[DOWN]->faceColor()) {
 				rotateCubeSpinCW();
-				rotateSliceCCW(0);
+				rotateSliceCCW(0); // U'
 			}
 		}
 		// rotate cube
@@ -1522,7 +1593,7 @@ bool Cube::solve3x3FirstLayerCorners() {
 					performAlgorithm("R' D' R D");
 					break;
 				}
-				rotateSliceCW(CUBE_SIZE - 1); // D
+				rotateSliceCW(CUBE_SIZE - 1); // D' // D
 			}
 		}
 		rotateCubeSpinCW();
@@ -1530,7 +1601,7 @@ bool Cube::solve3x3FirstLayerCorners() {
 
 	//while (face[DOWN]->getTopMiddleColor() != face[DOWN]->faceColor()) {
 	//	rotateCubeSpinCW();
-	//	rotateSliceCCW(0);
+	//	rotateSliceCCW(0); // U'
 	//}
 
 	return timeout != 0;
@@ -1543,10 +1614,10 @@ bool Cube::isSecondLayerSolved() {
 	Cubelet::color_t downColor = face[DOWN]->faceColor();
 
 	for (int i = CUBE_SIZE; i--;) {
-		if ((face[LEFT]->getC(i, CENTER).color != leftColor) ||
-			(face[UP]->getC(CENTER, CUBE_SIZE - i - 1).color != upColor) ||
-			(face[RIGHT]->getC(CUBE_SIZE - i - 1, CENTER).color != rightColor) ||
-			(face[DOWN]->getC(CENTER, i).color != downColor)) {
+		if ((face[LEFT]->getColor(i, CENTER) != leftColor) ||
+			(face[UP]->getColor(CENTER, CUBE_SIZE - i - 1) != upColor) ||
+			(face[RIGHT]->getColor(CUBE_SIZE - i - 1, CENTER) != rightColor) ||
+			(face[DOWN]->getColor(CENTER, i) != downColor)) {
 			return false;
 		}
 	}
@@ -1613,64 +1684,10 @@ bool Cube::solve3x3SecondLayer() {
 			performAlgorithm("U");
 		}
 		if (!found) {
-			//for (int s = 4; s--;) {
-			{
-				// if left edge is not solved, bring it up
-				if ((downLeftEdgeColor != downColor) || (leftBottomEdgeColor != leftColor)) {
-					if (m_con)*m_con << "left edge needs to come up\n";
-					performAlgorithm("U' L' U L U F U' F'");
-				}
-				//rotateCubeSpinCW();
-
-			//	// check if edge on left needs to flip
-			//	Cubelet::color_t downLeftEdgeColor = face[DOWN]->getMiddleLeftColor();
-			//	Cubelet::color_t leftBottomEdgeColor = face[LEFT]->getBottomMiddleColor();
-			//	if ((downLeftEdgeColor == leftColor) && (leftBottomEdgeColor == downColor)) {
-			//		if (m_con)*m_con << "left edge flip\n";
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		performAlgorithm("U2");
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		break;
-			//	}
-			//	// check if edge on left needs to move to right
-			//	if ((downLeftEdgeColor == downColor) && (leftBottomEdgeColor == rightColor)) {
-			//		if (m_con)*m_con << "left edge move to right edge\n";
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		performAlgorithm("U");
-			//		rotateCubeSpinCW();
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		break;
-			//	}
-			//	// check if edge on left needs to move to right with a flip
-			//	if ((downLeftEdgeColor == rightColor) && (leftBottomEdgeColor == downColor)) {
-			//		if (m_con)*m_con << "left edge move to right edge with a flip\n";
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		performAlgorithm("U2");
-			//		performAlgorithm("U R U' R' U' F' U F");
-			//		break;
-			//	}
-			//	// check if left edge needs to move to the top-right edge
-			//	Cubelet::color_t upColor = face[UP]->faceColor();
-			//	if ((downLeftEdgeColor == rightColor) && (leftBottomEdgeColor == upColor)) {
-			//		if (m_con)*m_con << "left edge needs to move to the top-right edge\n";
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		rotateCubeSpinCW();
-			//		rotateCubeSpinCW();
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		break;
-			//	}
-			//	// check flip case
-			//	if ((downLeftEdgeColor == upColor) && (leftBottomEdgeColor == rightColor)) {
-			//		if (m_con)*m_con << "left edge needs to move to the top-right edge flipped\n";
-			//		performAlgorithm("U' L' U L U F U' F'");
-			//		rotateCubeSpinCW();
-			//		performAlgorithm("U");
-			//		performAlgorithm("U R U' R' U' F' U F");
-			//		break;
-			//	}
-
-				// rotate the top
-				//performAlgorithm("U");
+			// if left edge is not solved, bring it up
+			if ((downLeftEdgeColor != downColor) || (leftBottomEdgeColor != leftColor)) {
+				if (m_con)*m_con << "left edge needs to come up\n";
+				performAlgorithm("U' L' U L U F U' F'");
 			}
 		}
 		// rotate the cube
@@ -1741,22 +1758,22 @@ void Cube::solve3x3LastLayerCornerOrientation() {
 			if (face[FRONT]->getTopLeftColor() == frontColor) {
 				++count;
 			}
-			rotateSliceCW(0);
+			rotateSliceCW(0); // U
 		}
 		switch (count) {
 		case 0:
 			while (face[LEFT]->getTopRightColor() != frontColor) {
-				rotateSliceCW(0);
+				rotateSliceCW(0); // U
 			}
 			break;
 		case 1:
 			while (face[FRONT]->getBottomLeftColor() != frontColor) {
-				rotateSliceCW(0);
+				rotateSliceCW(0); // U
 			}
 			break;
 		case 2:
 			while (face[DOWN]->getTopLeftColor() != frontColor) {
-				rotateSliceCW(0);
+				rotateSliceCW(0); // U
 			}
 			break;
 		}
@@ -1788,12 +1805,12 @@ void Cube::solve3x3LastLayerCornerPermutation() {
 				found = true;
 				break;
 			}
-			rotateSliceCW(0);
+			rotateSliceCW(0); // U
 		}
 		if (found) {
 			while (face[LEFT]->getBottomRightColor() != face[LEFT]->faceColor()) {
 				rotateCubeSpinCW();
-				rotateSliceCCW(0);
+				rotateSliceCCW(0); // U'
 			}
 		}
 		performAlgorithm("R U R' U' R' F R2 U' R' U' R U R' F'");
@@ -1818,55 +1835,47 @@ bool Cube::solve3x3LastLayerEdgePermutation() {
 // This solves any size cube like a 3x3. It assumes all the centers and edges are complete for cubes greater than 3x3.
 bool Cube::solve3x3() {
 	bool result;
-	//std::cout << "  solve3x3FirstLayerCross\n";
 	result = solve3x3FirstLayerCross();
 	if (!result) {
-		std::cout << "solve3x3FirstLayerCross() FAILED!\n";
-		print(std::cout);
+		if (m_con)*m_con << "solve3x3FirstLayerCross() FAILED!\n";
+		if (m_con) print(*m_con);
 		return false;
 	}
-	//std::cout << "  solve3x3FirstLayerCorners\n";
 	result = solve3x3FirstLayerCorners();
 	if (!result) {
-		std::cout << "solve3x3FirstLayerCorners() FAILED!\n";
-		print(std::cout);
+		if (m_con)*m_con << "solve3x3FirstLayerCorners() FAILED!\n";
+		if (m_con) print(*m_con);
 		return false;
 	}
-	//std::cout << "  solve3x3SecondLayer\n";
 	result = solve3x3SecondLayer();
 	if (!result) {
-		std::cout << "solve3x3SecondLayer() FAILED!\n";
-		print(std::cout);
+		if (m_con)*m_con << "solve3x3SecondLayer() FAILED!\n";
+		if (m_con) print(*m_con);
 		return false;
 	}
-	//std::cout << "  solve3x3LastLayerCross\n";
 	solve3x3LastLayerCross();
-	//std::cout << "  solve3x3LastLayerCornerOrientation\n";
 	solve3x3LastLayerCornerOrientation();
-	//std::cout << "  solve3x3LastLayerCornerPermutation\n";
 	solve3x3LastLayerCornerPermutation();
-	//std::cout << "  solve3x3LastLayerEdgePermutation\n";
 	result = solve3x3LastLayerEdgePermutation();
 	if (!result) {
-		std::cout << "solve3x3LastLayerEdgePermutation() FAILED!\n";
-		print(std::cout);
+		if (m_con)*m_con << "solve3x3LastLayerEdgePermutation() FAILED!\n";
+		if (m_con) print(*m_con);
 		return false;
 	}
-	//std::cout << "\n";
 
 	return true;
 }
 
 void Cube::printRow(std::ostream& s, Face* face, int row) const {
 	for (unsigned col = 0; col < CUBE_SIZE; ++col) {
-		s << face->getC(row, col).color << ' ';
+		s << face->getColor(row, col) << ' ';
 	}
 }
 
 void Cube::printRowPos(std::ostream& s, Face* face, int row) const {
 	int w = (CUBE_SIZE > 3) ? 2 : 1;
 	for (unsigned col = 0; col < CUBE_SIZE; ++col) {
-		s << face->getC(row, col).rot << face->getC(row, col).color << std::setw(w) << face->getC(row, col).pos << ' ';
+		s << face->getC(row, col).rot << face->getColor(row, col) << std::setw(w) << face->getC(row, col).pos << ' ';
 	}
 }
 
