@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Cube.h"
 
-constexpr unsigned CUBE_SIZE = 3;
+constexpr unsigned CUBE_SIZE = 7;
 
 TEST(RotateFaceTests, rotateCW) {
   Face face(CUBE_SIZE);
@@ -50,11 +50,11 @@ TEST(RotateCubeTests, Identity) {
 	Cubelet::color_t sides[] = { 'W','B','G','O','R','Y' };
   int rots[] = { 0,0,0,0,0,0 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = CUBE_SIZE; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).pos, row * CUBE_SIZE + col);
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, 0);
       }
@@ -69,11 +69,11 @@ TEST(RotateCubeTests, rotateCubeUp) {
 
   cube.rotateCubeUp();
   
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -101,11 +101,11 @@ TEST(RotateCubeTests, rotateCubeDown) {
 
   cube.rotateCubeDown();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -133,11 +133,11 @@ TEST(RotateCubeTests, rotateCubeLeft) {
 
   cube.rotateCubeLeft();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -165,11 +165,11 @@ TEST(RotateCubeTests, rotateCubeRight) {
 
   cube.rotateCubeRight();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -197,11 +197,11 @@ TEST(RotateCubeTests, rotateCubeSpinCW) {
 
   cube.rotateCubeSpinCW();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -229,11 +229,11 @@ TEST(RotateCubeTests, rotateCubeSpinCCW) {
 
   cube.rotateCubeSpinCCW();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -261,11 +261,11 @@ TEST(RotateCubeTests, rotateCubeUp2) {
 
   cube.rotateCubeUp2();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -293,11 +293,11 @@ TEST(RotateCubeTests, rotateCubeLeft2) {
 
   cube.rotateCubeLeft2();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -325,11 +325,11 @@ TEST(RotateCubeTests, rotateCubeSpin2) {
 
   cube.rotateCubeSpin2();
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -362,11 +362,11 @@ TEST(RotateSliceTests, rotateColumnUp) {
   Cubelet::color_t sides[] = { 'G','W','Y','O','R','B' };
   int rots[] = { 0,0,2,3,1,2 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -399,11 +399,11 @@ TEST(RotateSliceTests, rotateColumnDown) {
   Cubelet::color_t sides[] = { 'B','Y','W','O','R','G' };
   int rots[] = { 0,2,0,1,3,2 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row]));
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]);
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side]));
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]);
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]);
         switch (rots[side]) {
         case 0:
@@ -436,11 +436,11 @@ TEST(RotateSliceTests, rotateColumnTwice) {
   Cubelet::color_t sides[] = { 'Y','G','B','O','R','W' };
   int rots[] = { 2,0,0,2,2,2 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row])) << "row=" << row;
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]) << "row=" << row;
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side])) << "side=" << side;
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]) << "side=" << side;
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]) << "row=" << row << ",col=" << col << ",side=" << side;
         switch (rots[side]) {
         case 0:
@@ -473,11 +473,11 @@ TEST(RotateSliceTests, rotateRowLeft) {
   Cubelet::color_t sides[] = { 'R','B','G','W','Y','O' };
   int rots[] = { 0,1,3,0,0,0 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row])) << "row=" << row;
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]) << "row=" << row;
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side])) << "side=" << side;
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]) << "side=" << side;
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]) << "row=" << row << ",col=" << col << ",side=" << side;
         switch (rots[side]) {
         case 0:
@@ -510,11 +510,11 @@ TEST(RotateSliceTests, rotateRowRight) {
   Cubelet::color_t sides[] = { 'O','B','G','Y','W','R' };
   int rots[] = { 0,3,1,0,0,0 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row])) << "row=" << row;
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]) << "row=" << row;
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side])) << "side=" << side;
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]) << "side=" << side;
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]) << "row=" << row << ",col=" << col << ",side=" << side;
         switch (rots[side]) {
         case 0:
@@ -547,11 +547,11 @@ TEST(RotateSliceTests, rotateRowTwice) {
   Cubelet::color_t sides[] = { 'Y','B','G','R','O','W' };
   int rots[] = { 0,2,2,0,0,0 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row])) << "row=" << row;
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]) << "row=" << row;
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side])) << "side=" << side;
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]) << "side=" << side;
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]) << "row=" << row << ",col=" << col << ",side=" << side;
         switch (rots[side]) {
         case 0:
@@ -584,11 +584,11 @@ TEST(RotateSliceTests, rotateSliceCW) {
   Cubelet::color_t sides[] = { 'W','O','R','G','B','Y' };
   int rots[] = { 1,1,1,1,1,3 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row])) << "row=" << row;
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]) << "row=" << row;
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side])) << "side=" << side;
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]) << "side=" << side;
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]) << "row=" << row << ",col=" << col << ",side=" << side;
         switch (rots[side]) {
         case 0:
@@ -621,11 +621,11 @@ TEST(RotateSliceTests, rotateSliceCCW) {
   Cubelet::color_t sides[] = { 'W','R','O','B','G','Y' };
   int rots[] = { 3,3,3,3,3,1 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row])) << "row=" << row;
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]) << "row=" << row;
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side])) << "side=" << side;
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]) << "side=" << side;
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]) << "row=" << row << ",col=" << col << ",side=" << side;
         switch (rots[side]) {
         case 0:
@@ -658,11 +658,11 @@ TEST(RotateSliceTests, rotateSliceTwice) {
   Cubelet::color_t sides[] = { 'W','G','B','R','O','Y' };
   int rots[] = { 2,2,2,2,2,2 };
 
-  for (int row = CUBE_SIZE; row--;) {
-    EXPECT_TRUE(cube.getFace(row).isSolved(sides[row])) << "row=" << row;
-    EXPECT_EQ(cube.getFace(row).faceRotation(), rots[row]) << "row=" << row;
+  for (int side = 6; side--;) {
+    EXPECT_TRUE(cube.getFace(side).isSolved(sides[side])) << "side=" << side;
+    EXPECT_EQ(cube.getFace(side).faceRotation(), rots[side]) << "side=" << side;
     for (int col = CUBE_SIZE; col--;) {
-      for (int side = 6; side--;) {
+      for (int row = CUBE_SIZE; row--;) {
         EXPECT_EQ(cube.getFace(side).getC(row, col).rot, rots[side]) << "row=" << row << ",col=" << col << ",side=" << side;
         switch (rots[side]) {
         case 0:

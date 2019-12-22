@@ -102,7 +102,7 @@ public:
 	void rotateCubeSpin2();
 
 	// rotates specified cube face to the front
-	void rotateCubeToFront(int side);
+	void rotateFaceToFront(int side);
 
 	// rotates specified cube face to the specified face position
 	void rotateCubeFaceToPos(int side, int pos);
@@ -137,6 +137,8 @@ public:
 	// rotate the specified face clockwise
 	void rotateFaceCW(int side);
 
+	void rotateFaceCCW(int side);
+
 	// rotate front slice to the rotation specified
 	void restoreFrontRotation(int rot);
 
@@ -166,6 +168,8 @@ public:
 	// this part is always center column, but can be many rows (from center to bottom edge, not inclusive)
 	// 43-53 cubelets on a 7x7
 	bool solveFaceCenterPart1();
+
+	Cubelet::color_t getColor(int side, int row, int col);
 
 	bool solveFaceCenterPart2();
 

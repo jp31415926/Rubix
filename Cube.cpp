@@ -80,10 +80,10 @@
 Cube::Cube(unsigned size)
 	:CUBE_SIZE(size)
 {
-	if ((CUBE_SIZE & 1) == 0) {
-		std::cerr << "cube dimension must be odd\n";
-		throw std::exception("cube dimension must be odd");
-	}
+	//if ((CUBE_SIZE & 1) == 0) {
+	//	std::cerr << "cube dimension must be odd\n";
+	//	throw std::exception("cube dimension must be odd");
+	//}
 	CENTER = CUBE_SIZE / 2;
 	m_con = 0;
 
@@ -234,7 +234,7 @@ void Cube::rotateCubeSpin2() {
 }
 
 // rotates specified cube face to the front
-void Cube::rotateCubeToFront(int side) {
+void Cube::rotateFaceToFront(int side) {
 	if (m_con)*m_con << "Cube::" << __FUNCTION__ << "(" << side << ")\n";
 	switch (side) {
 	default:
@@ -266,7 +266,7 @@ void Cube::rotateCubeFaceToPos(int side, int pos) {
 		return;
 	}
 
-	rotateCubeToFront(side);
+	rotateFaceToFront(side);
 
 	switch (pos) {
 	default:
@@ -304,7 +304,7 @@ int Cube::findCubeByColor(Cubelet::color_t color) {
 // rotates cube to place specified face to the front based on face color
 void Cube::rotateCubeToFrontByColor(Cubelet::color_t color) {
 	if (m_con)*m_con << "Cube::" << __FUNCTION__ << "(" << color << ")\n";
-	rotateCubeToFront(findCubeByColor(color));
+	rotateFaceToFront(findCubeByColor(color));
 }
 
 void Cube::rotateColumnUp(int col) {
@@ -551,13 +551,38 @@ void Cube::rotateFaceCW(int side) {
 		rotateRowLeft(0); // B
 		break;
 	case DOWN:
-		rotateRowRight(CUBE_SIZE - 1); // F'
+		rotateRowRight(CUBE_SIZE - 1); // F
 		break;
 	case LEFT:
 		rotateColumnDown(0); // L
 		break;
 	case RIGHT:
 		rotateColumnUp(CUBE_SIZE - 1); // R
+		break;
+	}
+}
+
+// rotate the specified face clockwise
+void Cube::rotateFaceCCW(int side) {
+	if (m_con)*m_con << "Cube::" << __FUNCTION__ << "(" << side << ")\n";
+	switch (side) {
+	case FRONT:
+		rotateSliceCCW(0); // U'
+		break;
+	case BACK:
+		rotateSliceCCW(CUBE_SIZE - 1); // D
+		break;
+	case UP:
+		rotateRowRight(0); // B'
+		break;
+	case DOWN:
+		rotateRowLeft(CUBE_SIZE - 1); // F'
+		break;
+	case LEFT:
+		rotateColumnUp(0); // L'
+		break;
+	case RIGHT:
+		rotateColumnDown(CUBE_SIZE - 1); // R'
 		break;
 	}
 }
@@ -728,444 +753,142 @@ unsigned Cube::countUnsolvedCenters() {
 // 60 61 62 63 64 65 66
 
 
-// move cubelet(s) to form part 1 of center
-// this part is always center column, but can be many rows (from top to bottom edge, not inclusive)
-// 41-53 cubelets on a 7x7
-bool Cube::solveFaceCenterPart1() {
+bool Cube::solveFaceCenter() {
 	int timeout = 20;
 	unsigned start = 1;
 	unsigned end = CUBE_SIZE - 2;
-	Cubelet::color_t color = face[FRONT]->faceColor();
-	unsigned rotation = face[FRONT]->faceRotation();
-
-	for (unsigned row = start; row <= end; ++row) {
-		if (timeout-- == 0) break;
-		// is cubelet the color we want?
-		if (face[FRONT]->getColor(row, CENTER) != color) {
-			// find a cubelet the correct color and in the correct position and move it to here
-			// search all the faces
-			bool found = false;
-			// for (int f = 6; f--;)
-			for (unsigned f = 0; f < 6; ++f) {
-				// rotate each face up to 4 times
-				for (unsigned s = 4; s--;) {
-					if ((face[f]->getColor(row, CENTER) != color)
-						// special case where we find parts of the column we have already built
-					|| ((row > CENTER) && (f == FRONT) && (s == 1))) {
-						rotateFaceCW(f);
-						// turn to that face, rotate the face, then move back.
-						//rotateCubeToFront(f);
-						//rotateSliceCW(0); // U
-						//rotateCubeToFrontByColor(color);
-					}
-					else {
-						// found a match! Now move it to the front
-						found = true;
-						switch (f) {
-						case FRONT:
-							// if first block, we don't care about the state of all the other blocks
-							if (row == start) {
-								rotation = face[FRONT]->faceRotation();
-							}
-							else {
-								rotateRowRight(row);
-								restoreFrontRotation(rotation);
-								rotateRowLeft(row);
-							}
-							break;
-						case BACK:
-							rotateSliceCCW(0); // U'
-							rotateSliceCW(CUBE_SIZE - 1); // D'
-							rotateColumnTwice(row);
-							rotateSliceCW(0); // U
-							rotateColumnTwice(row);
-							break;
-						case UP:
-							rotateSliceCCW(0); // U'
-							rotateRowRight(0); // B' // B'
-							rotateColumnDown(row);
-							rotateSliceCW(0); // U
-							rotateColumnUp(row);
-							break;
-						case DOWN:
-							rotateSliceCCW(0); // U'
-							rotateRowLeft(0); // B
-							rotateColumnUp(row);
-							rotateSliceCW(0); // U
-							rotateColumnDown(row);
-							break;
-						case LEFT:
-							rotateRowRight(row);
-							rotateSliceCCW(0); // U'
-							rotateRowLeft(row);
-							rotateSliceCW(0); // U
-							break;
-						case RIGHT:
-							rotateRowLeft(row);
-							rotateSliceCCW(0); // U'
-							rotateRowRight(row);
-							rotateSliceCW(0); // U
-							break;
-						}
-						break;
-					}
-				}
-				if (found) break;
-			}
-		}
-	}
-
-	return timeout != 0;
-}
-
-bool Cube::solveFaceCenterPart2() {
-	int timeout = 20;
-	unsigned start = 1;
-	unsigned end = CUBE_SIZE - 2;
-	unsigned col;
-	unsigned coll = CENTER - 1;
-	unsigned colr = CENTER + 1;
 	Cubelet::color_t origColor = face[FRONT]->faceColor();
 	unsigned origRotation = face[FRONT]->faceRotation();
 	unsigned rotation = origRotation;
+	//bool faceSolved[6];
+	//Face* faceCopy[6];
+
+	if (face[FRONT]->isCenterSolved()) {
+		return true;
+	}
+	//for (unsigned f = 6; f--;) {
+	//	faceCopy[f] = face[f];
+	//	faceSolved[f] = faceCopy[f]->isCenterSolved();
+	//}
+
+	// is center column solved?
+	//if (!face[FRONT]->isRangeSolved(start, CENTER, end, CENTER)) {
+	//	if (m_con)*m_con << "Cube::" << __FUNCTION__ << " \n";
+	//	return false;
+	//}
 
 	// for each column in part 2 & 3...
-	for (unsigned colcount = 1; colcount <= CUBE_SIZE - 2; ++colcount) {
-		if ((colcount & 1) == 1) {
-			col = coll--;
-		}
-		else {
-			col = colr++;
-		}
-
-		if (timeout-- == 0) break;
+	for (unsigned col = 1; col <= CUBE_SIZE - 2; ++col) {
 		// is the column already done?
 		if (!face[FRONT]->isRangeSolved(start, col, end, col)) {
-			// if not, build it one at a time
-			//rotate to a face that is not solved
-			Cubelet::color_t workingFaceColor = -1;
-			for (int f = 1; f < 6; ++f) {
-				if (!face[f]->isCenterSolved()) {
-					rotateCubeToFront(f);
-					workingFaceColor = face[FRONT]->faceColor();
-					break;
-				}
-			}
 			for (unsigned row = start; row <= end; ++row) {
+				// Check that it is not already solved
 				if (face[FRONT]->getColor(row, col) != origColor) {
 					// find a cubelet the correct color and in the correct position and move it to here
 					// search all the faces
 					bool found = false;
-					// for (int f = 6; f--;)
-					for (unsigned f = 0; f < 6; ++f) {
-						// FIXME: for now, don't search for blocks on the face we are trying to solve.
-						// (need to make sure we don't take blocks from the parts that we have already solved.)
-						if (face[f]->faceColor() == origColor) {
+					// don't search for blocks on the face we are trying to solve.
+					for (unsigned f = 1; f < 6; ++f) {
+						// skip faces that are already solved
+						if (face[f]->isCenterSolved()) {
 							continue;
 						}
 						// rotate each face up to 4 times
-						for (int s = 4; s--;) {
+						for (unsigned s = 4; s--;) {
 							if (face[f]->getColor(row, col) != origColor) {
 								rotateFaceCW(f);
-								// turn to that face, rotate the face, then move back.
-								//Cubelet::color_t saveColor = face[FRONT]->faceColor();
-								//rotateCubeToFront(f);
-								//rotateSliceCW(0); // U
-								//rotateCubeToFrontByColor(saveColor);
 							}
 							else {
 								// found a match! Now move it to the working face
 								found = true;
+								std::string spin1,spin2;
+								int rotCol;
+								if (row == col) { // was col < CENTER
+									spin1 = "U";
+									spin2 = "U'";
+									rotCol = CUBE_SIZE - 1 - row;
+								}
+								else {
+									spin1 = "U'";
+									spin2 = "U";
+									rotCol = row;
+								}
 								switch (f) {
 								case BACK:
-									// I don't know what this part is for
-									//if (row == CENTER) {
-									//	rotateColumnTwice(col);
-									//	performAlgorithm("U");
-									//	//rotateSliceCW(0); // U
-									//	rotateColumnTwice(col);
-									//	performAlgorithm("U'");
-									//	//rotateSliceCCW(0); // U'
-									//}
-									//else {
-								  {
-										rotateRowTwice(row);
-										if (col > CENTER) {
-											performAlgorithm("U'");
-											//rotateSliceCCW(0); // U'
-										}
-										else {
-											performAlgorithm("U");
-											//rotateSliceCW(0); // U
-										}
-										rotateRowTwice(row);
-										if (col > CENTER) {
-											performAlgorithm("U");
-											//rotateSliceCW(0); // U
-										}
-										else {
-											performAlgorithm("U'");
-											//rotateSliceCCW(0); // U'
-										}
-									}
+									performAlgorithm("D2");
+									rotateColumnTwice(col);
+									performAlgorithm(spin1);
+									rotateColumnTwice(rotCol);
+									performAlgorithm(spin2);
+									rotateColumnTwice(col);
+									performAlgorithm(spin1);
+									rotateColumnTwice(rotCol);
+									performAlgorithm(spin2);
 									break;
 
-								case DOWN:
-									// spin and then do left
-									rotateCubeSpinCW();
-									performAlgorithm("U'");
-									//rotateSliceCCW(0); // U'
-									rotateColumnUp(0);
-									// YES, I want to drop down to LEFT
 								case LEFT:
-									if (row == CENTER) {
-										performAlgorithm("U L");
-										//rotateSliceCW(0); // U
-										//rotateColumnDown(0); // L
-										rotateRowRight(col);
-										performAlgorithm("U'");
-										//rotateSliceCCW(0); // U'
-										rotateRowLeft(col);
-									}
-									else {
-										rotateRowRight(row);
-										if (col > CENTER) {
-											performAlgorithm("U'");
-										}
-										else {
-											performAlgorithm("U");
-										}
-										rotateRowLeft(row);
-										if (col > CENTER) {
-											performAlgorithm("U");
-										}
-										else {
-											performAlgorithm("U'");
-										}
-									}
+									performAlgorithm("L");
+									rotateCubeSpinCCW();
+									performAlgorithm("U");
+								case DOWN:
+									rotateColumnUp(col);
+									performAlgorithm(spin1);
+									rotateColumnUp(rotCol);
+									performAlgorithm(spin2);
+									rotateColumnDown(col);
+									performAlgorithm(spin1);
+									rotateColumnDown(rotCol);
+									performAlgorithm(spin2);
 									break;
-								case FRONT:
-									if (row == start) {
-										// if first block, we don't care about the state of all the other blocks
-										// coincidentially, the center block MUST be moved first
-										break;
-									}
-									else {
-										//// for cases where the previous blocks will be in the way, rotate them out of the way
-										//int delta = rotation - face[FRONT]->faceRotation();
-										//if (delta < 0) {
-										//	delta += 4;
-										//}
-										//if (((col > CENTER) && (delta == 3)) ||
-										//	(col < CENTER) && (delta == 1)) {
-										//	// make sure we don't break a solved face, or the one we are working on
-										rotateUnsolvedAdjacentToPos(origColor, DOWN);
-										rotateColumnUp(col);
-										restoreFrontRotation(rotation);
-										//	if (col > CENTER) {
-										//		rotateSliceCW(0); // U
-										//	}
-										//	else {
-										//		rotateSliceCCW(0); // U'
-										//	}
-										//	rotateColumnDown(col);
-										//}
-										//// make sure we don't break a solved face, or the one we are working on
-										//rotateUnsolvedAdjacentToPos(origColor, LEFT);
-										//rotateRowRight(row);
-										//restoreFrontRotation(rotation);
-										//rotateRowLeft(row);
-									}
-									// YES, I want to drop down to UP
-								case UP:
-									// spin and then do right
-									rotateCubeSpinCW();
-									performAlgorithm("U' R'");
-									//rotateColumnDown(CUBE_SIZE - 1); // R'
-								// YES, I want to drop down to RIGHT
+
 								case RIGHT:
-									if (row == start) {
-										performAlgorithm("U R");
-										//rotateColumnUp(CUBE_SIZE - 1); // R
-										rotateRowLeft(col);
-										performAlgorithm("U'");
-										rotateRowRight(col);
-									}
-									else {
-										rotateRowLeft(row);
-										if (col < CENTER) {
-											performAlgorithm("U'");
-										}
-										else {
-											performAlgorithm("U");
-										}
-										rotateRowRight(row);
-										if (col < CENTER) {
-											performAlgorithm("U");
-										}
-										else {
-											performAlgorithm("U'");
-										}
-									}
+									performAlgorithm("R");
+									rotateCubeSpinCCW();
+									performAlgorithm("U");
+								case UP:
+									rotateColumnDown(col);
+									performAlgorithm(spin1);
+									rotateColumnDown(rotCol);
+									performAlgorithm(spin2);
+									rotateColumnUp(col);
+									performAlgorithm(spin1);
+									rotateColumnUp(rotCol);
+									performAlgorithm(spin2);
 									break;
+
 								}
-								if (row == start) {
-									rotation = face[FRONT]->faceRotation();
-								}
-								break;
 							}
+							if (found) break;
 						}
+						//// double check that we didn't break any of the solved sides with this move
+						//if (found) {
+						//	for (unsigned f = 1; f < 6; ++f) {
+						//		if (faceSolved[f] && !faceCopy[f]->isCenterSolved()) {
+						//			std::cout << "FAIL: move with row=" << row << ", col=" << col << ", face=" << f << " broke " << faceCopy[f]->faceColor() << " face\n";
+						//			return false;
+						//		}
+						//	}
+						//}
 						if (found) break;
 					}
 				}
 			}
-
-			rotateCubeToFrontByColor(origColor);
-			restoreFrontRotation(origRotation);
-			// move this set to the face we are solving
-			switch (findCubeByColor(workingFaceColor)) {
-			case FRONT:
-				// shouldn't happen
-				break;
-			case BACK:
-				rotateSliceTwice(0); // U2
-				rotateColumnTwice(col);
-				rotateSliceTwice(0); // U2
-				break;
-			case LEFT:
-				// spin and then do top
-				rotateCubeSpinCW();
-				performAlgorithm("U'");
-				//rotateSliceCCW(0); // U'
-				rotateRowRight(0); // B'
-				// YES, I want to drop down to UP
-			case UP:
-				rotateColumnDown(col);
-				if (col > CENTER) {
-					performAlgorithm("U");
-					//rotateSliceCW(0); // U
-				}
-				else {
-					performAlgorithm("U'");
-					//rotateSliceCCW(0); // U'
-				}
-				rotateColumnUp(col);
-				if (col > CENTER) {
-					performAlgorithm("U'");
-					//rotateSliceCCW(0); // U'
-				}
-				else {
-					performAlgorithm("U");
-					//rotateSliceCW(0); // U
-				}
-				break;
-			case RIGHT:
-				// spin and then do bottom
-				rotateCubeSpinCW();
-				performAlgorithm("U'");
-				//rotateSliceCCW(0); // U'
-				rotateRowLeft(CUBE_SIZE - 1);
-				// YES, I want to drop down to DOWN
-			case DOWN:
-				rotateColumnUp(col);
-				if (col > CENTER) {
-					performAlgorithm("U");
-					//rotateSliceCW(0); // U
-				}
-				else {
-					performAlgorithm("U'");
-					//rotateSliceCCW(0); // U'
-				}
-				rotateColumnDown(col);
-				if (col > CENTER) {
-					performAlgorithm("U'");
-					//rotateSliceCCW(0); // U'
-				}
-				else {
-					performAlgorithm("U");
-					//rotateSliceCW(0); // U
-				}
-				break;
-			}
-
 		}
 	}
-	//restoreFrontRotation(origRotation);
-	return timeout != 0;
-}
-
-bool Cube::solveFaceCenterPart3() {
-
-	return true;
-}
-
-bool Cube::solveFinal2Centers() {
-	return true;
-}
-
-// center parts for 7x7 example:
-// part 1: 43-53
-// part 2: 44-55
-// part 3: 41-52
-// part 4: 11-25
-
-// move cubelet(s) to form part 1 of center
-// this part is always 1 column, but can be many rows (from center to edge, not inclusive)
-bool Cube::solveFaceCenter() {
-	bool result;
-	result = solveFaceCenterPart1();
-	if (!result) {
-		if (m_con)*m_con << "solveFaceCenterPart1() FAILED!\n";
-		if (m_con) print(*m_con);
-		return false;
-	}
-	
-	result = solveFaceCenterPart2();
-	if (!result) {
-		if (m_con)*m_con << "solveFaceCenterPart2() FAILED!\n";
-		if (m_con) print(*m_con);
-		return false;
-	}
-
-	result = solveFaceCenterPart3();
-	if (!result) {
-		if (m_con)*m_con << "solveFaceCenterPart3() FAILED!\n";
-		if (m_con) print(*m_con);
-		return false;
-	}
-
-	solveFaceCenterPart2();
-
-	//solveFaceCenterPart3();
-
-	//solveFaceCenterPart4();
-
 	return true;
 }
 
 // solve the front face center
 bool Cube::solveFaceCenters() {
 	bool result = false;
-	while (countUnsolvedCenters() > 2) {
-		// find an unsolved face center
-		int f = findUnsolvedCenter();
-
-		// if there are none, get out
-		if (f == -1) {
-			break;
-		}
+	int f;
+	while ((f = findUnsolvedCenter()) != -1) {
 
 		// bring unsolved face to front
-		rotateCubeToFront(f);
+		rotateFaceToFront(f);
 
 		// do steps to solve the center of current face
 		result = solveFaceCenter();
-		break;//debugging
-	}
-	if (result && (countUnsolvedCenters() == 2)) {
-		// find an unsolved face center
-		int f = findUnsolvedCenter();
-		result = solveFinal2Centers();
 	}
 
 	return result;

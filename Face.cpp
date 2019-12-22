@@ -116,13 +116,15 @@ void Face::rotateCW() {
 	//   32 -> 21
 	//   21 -> 12
 
-	for (int start = 0, end = CUBE_SIZE - 1; start != end; ++start, --end) {
+	for (int start = 0, end = CUBE_SIZE - 1; end > start; ++start, --end) {
 		// rotate corners
 		Cubelet::rotate4(cface[start][start], cface[start][end], cface[end][end], cface[end][start], 1);
 		for (int x = start + 1; x <= end - 1; ++x) {
 			// rotate internal cubelets
 			Cubelet::rotate4(cface[start][x], cface[x][end], cface[end][end + start - x], cface[end + start - x][start], 1);
 		}
+	}
+	if (CENTER * 2 != CUBE_SIZE) {
 		cface[CENTER][CENTER].rot = (cface[CENTER][CENTER].rot + 1) & 3;
 	}
 	m_rotation = (m_rotation + 1) & 3;
@@ -137,12 +139,14 @@ void Face::rotateCCW() {
 	// 30 31 32 33 34      01 11 21 31 41
 	// 40 41 42 43 44      00 10 20 30 40
 
-	for (int start = 0, end = CUBE_SIZE - 1; start != end; ++start, --end) {
+	for (int start = 0, end = CUBE_SIZE - 1; end > start; ++start, --end) {
 		Cubelet::rotate4(cface[start][start], cface[end][start], cface[end][end], cface[start][end], -1);
 		for (int x = start + 1; x <= end - 1; ++x) {
 			// Cubelet::rotate4(cface[start][x], cface[end + start - x][start], cface[end][x], cface[end + start - x][end], -1);
 			Cubelet::rotate4(cface[start][x], cface[end + start - x][start], cface[end][end + start - x], cface[x][end], -1);
 		}
+	}
+	if (CENTER * 2 != CUBE_SIZE) {
 		cface[CENTER][CENTER].rot = (cface[CENTER][CENTER].rot - 1) & 3;
 	}
 	m_rotation = (m_rotation - 1) & 3;
@@ -150,13 +154,15 @@ void Face::rotateCCW() {
 
 /// Rotate front face twice (direction doesn't matter)
 void Face::rotateTwice() {
-	for (unsigned start = 0, end = CUBE_SIZE - 1; start != end; ++start, --end) {
+	for (unsigned start = 0, end = CUBE_SIZE - 1; end > start; ++start, --end) {
 		Cubelet::swap(cface[start][start], cface[end][end], 2);
 		Cubelet::swap(cface[end][start], cface[start][end], 2);
 		for (unsigned x = start + 1; x <= end - 1; ++x) {
 			Cubelet::swap(cface[start][x], cface[end][end + start - x], 2);
 			Cubelet::swap(cface[end + start - x][start], cface[x][end], 2);
 		}
+	}
+	if (CENTER * 2 != CUBE_SIZE) {
 		cface[CENTER][CENTER].rot = (cface[CENTER][CENTER].rot + 2) & 3;
 	}
 	m_rotation = (m_rotation + 2) & 3;
