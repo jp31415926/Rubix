@@ -1445,8 +1445,8 @@ void Cube::solve3x3LastLayerCross() {
 		case 5: // top and right
 			performAlgorithm("U'"); // transform to top and left
 		case 3: // top and left
-			performAlgorithm("F R U R' U' F'");
-			performAlgorithm("F R U R' U' F'");
+			performAlgorithm("F R U R' U'   ");
+			performAlgorithm("  R U R' U' F'");
 			return;
 
 		case 15: // all 4!
