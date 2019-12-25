@@ -10,6 +10,7 @@ public:
 		color = 0;
 		pos = 0;
 		rot = 0;
+		//Cubelet* others[2];
 	}
 
 	// Rotates 4 cubelets s1->s2, s2->s3, s3->s4, s4->s1

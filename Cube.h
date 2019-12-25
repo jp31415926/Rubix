@@ -139,8 +139,10 @@ public:
 
 	void rotateFaceCCW(int side);
 
+	void restoreCubeRotation(int rot);
+
 	// rotate front slice to the rotation specified
-	void restoreFrontRotation(int rot);
+	void restoreFrontFaceRotation(int rot);
 
 	// repeatedly and randomly call various move functions to scramble the cube
 	void scramble(int iterations = 200, bool limitTo3x3 = false);
@@ -163,22 +165,8 @@ public:
 	// returns number of unsolved centers
 	unsigned countUnsolvedCenters();
 
-	// Assumptions: front face as already been searched for a matching part 1
-	// move cubelet(s) to form part 1 of center
-	// this part is always center column, but can be many rows (from center to bottom edge, not inclusive)
-	// 43-53 cubelets on a 7x7
-	bool solveFaceCenterPart1();
+	//Cubelet::color_t getColor(int side, int row, int col);
 
-	Cubelet::color_t getColor(int side, int row, int col);
-
-	bool solveFaceCenterPart2();
-
-	bool solveFaceCenterPart3();
-
-	bool solveFinal2Centers();
-
-
-	//bool solveFaceCenterPart4();
 
 	// 00 01 02 03 04 05 06
 	// 10 11 12 13 14 15 16
@@ -200,6 +188,30 @@ public:
 
 	// solve the front face center
 	bool solveFaceCenters();
+
+	bool isEdgeSolved(int side);
+
+	int countUnsolvedEdges();
+
+	bool findUnsolvedEdgeMakeFrontLeft();
+
+	unsigned cubeOrintation() const;
+
+	bool restoreCubeOrintation(unsigned co);
+
+	int checkFrontEdges(int row, Cubelet::color_t frontLeftEdgeTopColor, Cubelet::color_t leftRightEdgeTopColor);
+
+	int checkTopEdges(int row, Cubelet::color_t frontDesiredColor, Cubelet::color_t leftDesiredColor);
+
+	int checkBottomEdges(int row, Cubelet::color_t frontDesiredColor, Cubelet::color_t leftDesiredColor);
+
+	void rotateRowRightMulti(int row, unsigned iterations);
+
+	void rotateRowLeftMulti(int row, unsigned iterations);
+
+	void rotateCubeLeftMulti(unsigned iterations);
+
+	bool solveEdges();
 
 	// perform algorithms
 	// Example: F U' R U
@@ -241,6 +253,8 @@ public:
 
 	// This solves any size cube like a 3x3. It assumes all the centers and edges are complete for cubes greater than 3x3.
 	bool solve3x3();
+
+	bool solveCube();
 
 	void printRow(std::ostream& s, Face* face, int row) const;
 

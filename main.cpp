@@ -8,7 +8,7 @@ bool test3x3() {
 		cube.scramble(pass, true);
 
 		// turn on debug output after we reach a pass that needs a closer look.
-		//if (pass >= 2) {
+		//if (pass >= 1) {
 		//	cube.setcon(&std::cout);
 		//	cube.print(std::cout);
 		//}
@@ -23,8 +23,11 @@ bool test3x3() {
 }
 
 int main() {
+	//test3x3();
+	//return 0;
+
 	for (int pass = 100; pass <= 10000; ++pass) {
-		Cube cube(6);
+		Cube cube(5);
 		std::cout << "Pass " << pass << "\n";
 		cube.scramble(pass);
 
@@ -33,7 +36,7 @@ int main() {
 		//	cube.setcon(&std::cout);
 		//	cube.print(std::cout);
 		//}
-		bool result = cube.solveFaceCenters();
+		bool result = cube.solveCube();
 		//cube.print(std::cout);
 		if (!result || (cube.findUnsolvedCenter() != -1)) {
 			std::cout << "Pass " << pass << " FAILED!\n";
