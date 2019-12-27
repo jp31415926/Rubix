@@ -2,7 +2,6 @@
 #include <algorithm> // std::swap
 #include <iomanip> // std::setw
 #include <cstdlib>
-#include <ctime>
 #include "Tokenize.h"
 #include "Face.h"
 #include "Cube.h"
@@ -634,15 +633,18 @@ void Cube::restoreFrontFaceRotation(int rot) {
 }
 
 // repeatedly and randomly call various move functions to scramble the cube
-void Cube::scramble(int iterations, bool limitTo3x3) {
+void Cube::scramble(int iterations, bool limitTo3x3, unsigned seed) {
 	if (m_con)*m_con << "Cube::" << __FUNCTION__ << " STARTED\n";
 	int layer;
+	int start;
+	int end;
 
-	//std::srand((unsigned)std::time(nullptr));
-	std::srand(0);
+	if (seed) {
+		std::srand(seed);
+	}
 
 	for (int x = iterations; x--;) {
-		switch (std::rand() % 20) {
+		switch (std::rand() % 10) {
 		case 0:
 			rotateCubeUp();
 			break;
@@ -673,31 +675,58 @@ void Cube::scramble(int iterations, bool limitTo3x3) {
 		}
 
 		if (limitTo3x3) {
-			layer = (std::rand() % 2) * (CUBE_SIZE - 1);
+			switch (std::rand() % 3) {
+			case 0:
+				start = 0;
+				end = 0;
+				break;
+			case 1:
+				start = CUBE_SIZE - 1;
+				end = CUBE_SIZE - 1;
+				break;
+			case 2:
+				start = 1;
+				end = CUBE_SIZE - 2;
+				break;
+			}
 		}
 		else {
-			layer = std::rand() % CUBE_SIZE;
+			start = std::rand() % CUBE_SIZE;
+			end = start;
 		}
 
-		switch (std::rand() % 6) {
-		case 0:
-			rotateColumnUp(layer);
-			break;
-		case 1:
-			rotateColumnDown(layer);
-			break;
-		case 2:
-			rotateColumnTwice(layer);
-			break;
-		case 3:
-			rotateRowLeft(layer);
-			break;
-		case 4:
-			rotateRowRight(layer);
-			break;
-		case 5:
-			rotateRowTwice(layer);
-			break;
+		int move = std::rand() % 9;
+
+		for (layer = start; layer <= end; ++layer) {
+			switch (move) {
+			case 0:
+				rotateColumnUp(layer);
+				break;
+			case 1:
+				rotateColumnDown(layer);
+				break;
+			case 2:
+				rotateColumnTwice(layer);
+				break;
+			case 3:
+				rotateRowLeft(layer);
+				break;
+			case 4:
+				rotateRowRight(layer);
+				break;
+			case 5:
+				rotateRowTwice(layer);
+				break;
+			case 6:
+				rotateSliceCW(layer);
+				break;
+			case 7:
+				rotateSliceCCW(layer);
+				break;
+			case 8:
+				rotateSliceTwice(layer);
+				break;
+			}
 		}
 	}
 
@@ -1093,14 +1122,14 @@ int Cube::checkTopEdges(int row, Cubelet::color_t frontDesiredColor, Cubelet::co
 }
 
 int Cube::checkBottomEdges(int row, Cubelet::color_t frontDesiredColor, Cubelet::color_t leftDesiredColor) {
-	// bottom, close, front colors don't match
+	// bottom, matching pos, front colors don't match
 	Cubelet::color_t frontEdge = face[FRONT]->getColor(CUBE_SIZE - 1, row);
 	Cubelet::color_t otherEdge = face[DOWN]->getColor(0, row);
 	if ((frontEdge == leftDesiredColor)
 		&& (otherEdge == frontDesiredColor)) {
 		return 1;
 	}
-	// bottom, close, front colors match
+	// bottom, matching pos, front colors match
 	if ((frontEdge == frontDesiredColor)
 		&& (otherEdge == leftDesiredColor)) {
 		return 2;
@@ -1108,12 +1137,12 @@ int Cube::checkBottomEdges(int row, Cubelet::color_t frontDesiredColor, Cubelet:
 
 	frontEdge = face[FRONT]->getColor(CUBE_SIZE - 1, CUBE_SIZE - 1 - row);
 	otherEdge = face[DOWN]->getColor(0, CUBE_SIZE - 1 - row);
-	// bottom, far, front colors match
+	// bottom, opposite pos, front colors match
 	if ((frontEdge == frontDesiredColor)
 		&& (otherEdge == leftDesiredColor)) {
 		return 3;
 	}
-	// bottom, far, front colors don't match
+	// bottom, opposite pos, front colors don't match
 	if ((frontEdge == leftDesiredColor)
 		&& (otherEdge == frontDesiredColor)) {
 		return 4;
@@ -1140,33 +1169,47 @@ void Cube::rotateCubeLeftMulti(unsigned iterations) {
 	}
 }
 
+/* 
+The idea is to find a edge on another side and then move it over.
+The edge we are building is always the FRONT/LEFT edge.
+Start looking on the FRONT/RIGHT edge for matches. If none, rotate cube to the left and check other two FRONT/RIGHT edges.
+Then start checking the FRONT/UP and FRONT/DOWN edges, rotating UP and DOWN as we do, up to 4 times.
+Once we find a match, move it over (rotating as necessary). This move to the next edge piece.
+*/
 bool Cube::solveEdges() {
 	while (countUnsolvedEdges() > 2) {
 		findUnsolvedEdgeMakeFrontLeft();
-		bool solved = false;
 		Cubelet::color_t frontLeftEdgeTopColor = face[FRONT]->getMiddleLeftColor();
 		Cubelet::color_t leftRightEdgeTopColor = face[LEFT]->getMiddleRightColor();
+
 		for (unsigned row = 1; row < CUBE_SIZE - 1; ++row) {
+			bool solved = false;
 			unsigned orintation = cubeOrintation();
+
+			// check FRONT/RIGHT edges, rotating cube up to 3 times.
 			for (unsigned side = 1; side <= 3; ++side) {
 				switch (checkFrontEdges(row, frontLeftEdgeTopColor, leftRightEdgeTopColor)) {
 				case 0: // already solved
 					solved = true;
 					break;
 				case 1:// right, inline, front colors don't match
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");
 				case 3:// right, opposite, front colors match
 					rotateRowRightMulti(row, side);
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");
 					rotateRowLeftMulti(row, side);
 					solved = true;
 					break;
 
 				case 2:// right, inline, front colors match
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");
 				case 4:// right, opposite, front colors don't match
 					rotateRowRightMulti(CUBE_SIZE - 1 - row, side);
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");
 					rotateRowLeftMulti(CUBE_SIZE - 1 - row, side);
 					// the edge we are trying to solve is not solved here, but the opposite side is, so it's a good thing
 					break;
@@ -1175,67 +1218,89 @@ bool Cube::solveEdges() {
 				rotateCubeLeft();
 			}
 			restoreCubeOrintation(orintation);
-			if (solved) break; // out of for row loop
+			if (solved) continue; // continue side for loop
 
+			// check FRONT/UP and FRONT/DOWN edges for pieces we can use
 			for (int s = 4; s--;) {
 				int which = checkTopEdges(row, frontLeftEdgeTopColor, leftRightEdgeTopColor);
 				switch (which) {
 				case 2:// top, matching pos, front colors match
 				case 3:// top, opposite pos, front colors match
-					if (which == 2)
-						performAlgorithm("F R F' R'");
-					else
-						performAlgorithm("U' R'");
+					if (which == 3) {
+						//performAlgorithm("F R F' R'");
+						performAlgorithm("U R U' R'");///////
+					}
+					else {
+						//performAlgorithm("U' R'");
+						performAlgorithm("B' R'");
+					}
 					rotateRowRight(row); 
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");///////
 					rotateRowLeft(row);
 					solved = true;
 					break;
 
 				case 1:// top, matching pos, front colors don't match
 				case 4:// top, opposite pos, front colors don't match
-					if (which == 1)
-						performAlgorithm("F R F' R'");
-					else
-						performAlgorithm("U' R'");
+					if (which == 1) {
+						//performAlgorithm("F R F' R'");
+						performAlgorithm("U R U' R'");
+					}
+					else {
+						//performAlgorithm("U' R'");
+						performAlgorithm("B' R'");
+					}
 					rotateRowRight(CUBE_SIZE - 1 - row);
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");
 					rotateRowLeft(CUBE_SIZE - 1 - row);
 					solved = true;
 					break;
 				}
 				if (solved)	break; // out of for side loop
-				performAlgorithm("U");
+				//performAlgorithm("U");
+				rotateRowLeft(0); // B
 
 				// check bottom of FRONT side
 				which = checkBottomEdges(row, frontLeftEdgeTopColor, leftRightEdgeTopColor);
 				switch (which) {
-				case 1:// bottom, close, front colors don't match
-				case 3:// bottom, far, front colors match
-					performAlgorithm("D R");
-					if (which == 3)
-						performAlgorithm("R U R' F R' F' R");
+				case 1:// bottom, matching pos, front colors don't match
+				case 3:// bottom, opposite pos, front colors match
+					//performAlgorithm("D R");
+					if (which == 1) {
+						performAlgorithm("F R");
+					} else {
+						performAlgorithm("U' R' U R");
+					}
 					rotateRowRight(row);
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");
 					rotateRowLeft(row);
 					solved = true;
 					break;
 
-				case 2:// bottom, close, front colors match
-				case 4:// bottom, far, front colors don't match
-					performAlgorithm("D R");
-					if (which == 2)
-						performAlgorithm("R U R' F R' F' R");
+				case 2:// bottom, matching pos, front colors match
+				case 4:// bottom, opposite pos, front colors don't match
+					//performAlgorithm("D R");
+					if (which == 4) {
+						performAlgorithm("F R");
+					}
+					else {
+						performAlgorithm("U' R' U R");
+					}
 					rotateRowRight(CUBE_SIZE - 1 - row);
-					performAlgorithm("R U R' F R' F' R");
+					//performAlgorithm("R U R' F R' F' R");
+					performAlgorithm("R B R' U R' U' R");
 					rotateRowLeft(CUBE_SIZE - 1 - row);
 					// the edge we are trying to solve is not solved here, but the opposite side is, so it's a good thing
 					break;
 				}
 				if (solved)	break; // out of for side loop
-				performAlgorithm("D'");
+				//performAlgorithm("D'");
+				rotateRowLeft(CUBE_SIZE - 1); // F'
 			}
-			if (solved) break;
+			//if (solved) break;
 		}
 	}
 
@@ -2080,4 +2145,25 @@ void Cube::printPos(std::ostream& s) const {
 		s << '\n';
 	}
 	s << '\n';
+}
+
+// something like this for a 3x3: DUUBULDBFRBFRRULLLBRDFFFBLURDBFDFDRFRULBLUFDURRBLBDUDL
+void Cube::printKociemba(std::ostream& stream) const {
+	const unsigned sides[] = { UP, RIGHT, FRONT, DOWN, LEFT, BACK };
+	const char* sideNames = "FUDLRB";
+	std::vector< Cubelet::color_t > colors(256, 'x');
+
+	for (unsigned s = 6; s--;) {
+		colors[face[s]->faceColor()] = sideNames[s];
+	}
+
+	for (unsigned s = 0; s < 6; ++s) {
+		Face* f = face[sides[s]];
+		for (unsigned row = 0; row < CUBE_SIZE; ++row) {
+			for (unsigned col = 0; col < CUBE_SIZE; ++col) {
+				stream << colors[f->getColor(row, col)];
+			}
+		}
+	}
+	stream << "\n";
 }

@@ -145,7 +145,7 @@ public:
 	void restoreFrontFaceRotation(int rot);
 
 	// repeatedly and randomly call various move functions to scramble the cube
-	void scramble(int iterations = 200, bool limitTo3x3 = false);
+	void scramble(int iterations = 200, bool limitTo3x3 = false, unsigned seed = 0);
 
 	// Is the cube solved?
 	bool isSolved() const;
@@ -265,6 +265,8 @@ public:
 	void print2(std::ostream& s) const;
 
 	void printPos(std::ostream& s) const;
+
+	void printKociemba(std::ostream& s) const;
 
 private:
 	unsigned CUBE_SIZE;

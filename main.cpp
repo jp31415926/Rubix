@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <ctime>
 #include "Cube.h"
 
 bool test3x3() {
@@ -22,8 +24,25 @@ bool test3x3() {
 	return 0;
 }
 
+void generateCubes()
+{
+	std::srand((unsigned)std::time(nullptr));
+	std::ofstream f("random-cubes-10k.txt");
+
+	for (int pass = 1; pass <= 10000; ++pass) {
+		Cube cube(3);
+		cube.scramble(1000);
+		cube.printKociemba(f);
+		cube.printKociemba(std::cout);
+	}
+	f.close();
+}
+
 int main() {
 	//test3x3();
+	//return 0;
+
+	//generateCubes();
 	//return 0;
 
 	for (int pass = 100; pass <= 10000; ++pass) {
